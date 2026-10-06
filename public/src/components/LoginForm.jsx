@@ -66,14 +66,14 @@ function LoginForm({ onLoginSuccess }) {
     return (
         <div className="glass-card">
             <div className="brand-header">
-                <div className="logo-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                    </svg>
+                <div className="login-hero-logo">
+                    <img src="/static/icon.png" alt="Placement Intervention System" />
                 </div>
-                <h2>Placement Portal (React)</h2>
-                <p>Welcome back! Please sign in to your account.</p>
+                <h2>Placement Intervention System</h2>
+                <div className="brand-motto">
+                    <span>Guide</span> &bull; <span>Prepare</span> &bull; <span>Track</span> &bull; <span>Succeed</span>
+                </div>
+                <p className="brand-desc">Enterprise Campus Recruitment Performance & AI Diagnostic Architecture</p>
             </div>
 
             {/* React Dynamic Alert Box */}

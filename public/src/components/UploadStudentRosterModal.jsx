@@ -63,9 +63,14 @@ function UploadStudentRosterModal({ isOpen, onClose, onRosterUploaded }) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-dialog large-dialog" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-head">
-                    <div>
-                        <h3>Bulk Student Academic Roster Import</h3>
-                        <p className="modal-sub">Import or update academic records, CGPA, department, and skills for all students at once</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="brand-icon" style={{ width: '40px', height: '40px' }}>
+                            <img src="/static/icon.png" alt="Placement Intervention System" />
+                        </div>
+                        <div>
+                            <h3>Bulk Student Academic Roster Import</h3>
+                            <p className="modal-sub">Import or update academic records, CGPA, department, and skills for all students at once</p>
+                        </div>
                     </div>
                     <button type="button" className="modal-close" onClick={onClose}>&times;</button>
                 </div>
@@ -86,29 +91,48 @@ function UploadStudentRosterModal({ isOpen, onClose, onRosterUploaded }) {
                         <h4>Student Academic Roster Updated!</h4>
                         <p className="summary-desc">{summaryReport.message}</p>
 
-                        <div className="summary-metrics">
+                        <div className="summary-metrics" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }}>
                             <div className="sum-stat">
                                 <span className="val">{summaryReport.imported_count}</span>
-                                <span className="lbl">Profiles Imported/Updated</span>
+                                <span className="lbl">Total Processed</span>
+                            </div>
+                            <div className="sum-stat">
+                                <span className="val" style={{ color: '#38bdf8' }}>{summaryReport.updated_count !== undefined ? summaryReport.updated_count : '-'}</span>
+                                <span className="lbl">Auto-Updated 🔄</span>
+                            </div>
+                            <div className="sum-stat">
+                                <span className="val" style={{ color: '#34d399' }}>{summaryReport.created_count !== undefined ? summaryReport.created_count : '-'}</span>
+                                <span className="lbl">New Profiles ✨</span>
                             </div>
                             <div className="sum-stat">
                                 <span className="val">{summaryReport.skipped_count}</span>
-                                <span className="lbl">Skipped Invalid Rows</span>
-                            </div>
-                            <div className="sum-stat">
-                                <span className="val">{summaryReport.total_rows}</span>
-                                <span className="lbl">Total File Rows</span>
+                                <span className="lbl">Skipped Rows</span>
                             </div>
                         </div>
 
                         {summaryReport.students && summaryReport.students.length > 0 && (
                             <div className="preview-list-container">
-                                <span className="preview-title">Sample Updated Student Profiles:</span>
+                                <span className="preview-title">Student Profile Ingestion Status:</span>
                                 <div className="preview-list">
                                     {summaryReport.students.slice(0, 5).map((st, i) => (
                                         <div key={i} className="preview-item">
                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span className="p-gmail">{st.name} ({st.register_number})</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span className="p-gmail">{st.name} ({st.register_number})</span>
+                                                    {st.action && (
+                                                        <span style={{
+                                                            fontSize: '0.68rem',
+                                                            padding: '1px 6px',
+                                                            borderRadius: '10px',
+                                                            fontWeight: 'bold',
+                                                            background: st.action === 'Updated' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(52, 211, 153, 0.15)',
+                                                            color: st.action === 'Updated' ? '#38bdf8' : '#34d399',
+                                                            border: `1px solid ${st.action === 'Updated' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(52, 211, 153, 0.3)'}`
+                                                        }}>
+                                                            {st.action === 'Updated' ? 'Auto-Updated' : 'New'}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>{st.email} &bull; {st.department}</span>
                                             </div>
                                             <span className="p-res">CGPA {st.cgpa}</span>
@@ -223,7 +247,7 @@ function UploadStudentRosterModal({ isOpen, onClose, onRosterUploaded }) {
                         </div>
 
                         <div className="info-box-tip">
-                            <strong>Automatic Upsert Engine:</strong> Matches students by <code>Register Number</code>. Existing student records will be updated with new CGPA, percentages, and skills, while new students will be automatically registered into the database.
+                            <strong>Automatic Roster Auto-Update Engine:</strong> Matches students by <code>Register Number</code> or <code>Email</code>. If updated details (e.g. newly published CGPA, revised percentages, or transferred departments) are imported, existing student records will be <strong>automatically updated</strong> across all dashboards while preserving their personal portfolios and competitive coding logs.
                         </div>
 
                         <div className="modal-foot">

@@ -6,10 +6,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from typing import Optional
 
-from config import TEMPLATES_DIR, MAX_FILE_SIZE_BYTES
-import database as db
-import parser
-import exporter
+try:
+    from .config import TEMPLATES_DIR, MAX_FILE_SIZE_BYTES
+    from . import database as db
+    from . import parser
+    from . import exporter
+except ImportError:
+    from config import TEMPLATES_DIR, MAX_FILE_SIZE_BYTES
+    import database as db
+    import parser
+    import exporter
 
 # Initialize tables on startup
 @asynccontextmanager
@@ -334,7 +340,8 @@ async def upload_student_roster(file: UploadFile = File(...)):
             cgpa=item["cgpa"],
             tenth=item.get("tenth_percentage"),
             twelfth=item.get("twelfth_percentage"),
-            skills=item.get("skills", "")
+            skills=item.get("skills", ""),
+            year=item.get("year", "4th Year")
         )
         processed_students.append(res)
 

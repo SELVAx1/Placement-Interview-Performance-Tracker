@@ -89,6 +89,14 @@ def generate_templates():
     for row in results_data:
         ws.append(row)
     style_excel_sheet(ws, "Results")
+
+    from openpyxl.worksheet.datavalidation import DataValidation
+    dv_res = DataValidation(type="list", formula1='"Shortlisted for Round 2,Shortlisted for Round 3,Selected,Rejected,On Hold,Absent"', allow_blank=True)
+    dv_res.error = 'Please select a valid result status.'
+    dv_res.errorTitle = 'Invalid Status'
+    ws.add_data_validation(dv_res)
+    dv_res.add("E2:E100")
+
     wb.save(os.path.join(TEMPLATES_DIR, "sample_drive_results.xlsx"))
 
     # Save CSV
@@ -121,6 +129,14 @@ def generate_templates():
     for row in user_data:
         ws.append(row)
     style_excel_sheet(ws, "Users")
+
+    from openpyxl.worksheet.datavalidation import DataValidation
+    dv_user = DataValidation(type="list", formula1='"Student,Mentor,Coordinator,Department,Recruiter"', allow_blank=True)
+    dv_user.error = 'Please select a valid user role.'
+    dv_user.errorTitle = 'Invalid Role'
+    ws.add_data_validation(dv_user)
+    dv_user.add("B2:B100")
+
     wb.save(os.path.join(TEMPLATES_DIR, "sample_user_access.xlsx"))
 
     # Save CSV
@@ -191,6 +207,16 @@ def generate_templates():
     for row in drives_data:
         ws.append(row)
     style_excel_sheet(ws, "Drives")
+
+    from openpyxl.worksheet.datavalidation import DataValidation
+    dv_ctype = DataValidation(type="list", formula1='"Product,Service,Consulting,Startup"', allow_blank=True)
+    ws.add_data_validation(dv_ctype)
+    dv_ctype.add("D2:D100")
+
+    dv_status = DataValidation(type="list", formula1='"Active,Upcoming,Completed,Archived"', allow_blank=True)
+    ws.add_data_validation(dv_status)
+    dv_status.add("J2:J100")
+
     wb.save(os.path.join(TEMPLATES_DIR, "sample_company_drives.xlsx"))
 
     # Save CSV

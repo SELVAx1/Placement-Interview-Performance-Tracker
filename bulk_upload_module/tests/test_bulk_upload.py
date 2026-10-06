@@ -1,17 +1,23 @@
 import os
 import sys
 
-# Ensure parent directory is in sys.path for direct pytest invocation
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Ensure workspace root is in sys.path
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+# Point to dedicated test database for bulk upload tests
+TEST_DB_PATH = os.path.join(os.path.dirname(__file__), "test_bulk.db")
+os.environ["BULK_UPLOAD_DB_PATH"] = TEST_DB_PATH
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app import app
-from config import TEMPLATES_DIR
-import database as db
+from bulk_upload_module.app import app as bulk_app
+from bulk_upload_module.config import TEMPLATES_DIR
+import bulk_upload_module.database as db
 
-client = TestClient(app)
+client = TestClient(bulk_app)
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
@@ -26,6 +32,12 @@ def setup_database():
     conn.commit()
     conn.close()
     db.init_db()
+    yield
+    if os.path.exists(TEST_DB_PATH):
+        try:
+            os.remove(TEST_DB_PATH)
+        except OSError:
+            pass
 
 def test_health_and_root():
     res = client.get("/health")

@@ -119,9 +119,14 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '580px' }}>
                 <div className="modal-head">
-                    <div>
-                        <h3>User Access Management</h3>
-                        <p className="modal-sub">Grant platform credentials to single students or upload bulk spreadsheets</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="brand-icon" style={{ width: '40px', height: '40px' }}>
+                            <img src="/static/icon.png" alt="Placement Intervention System" />
+                        </div>
+                        <div>
+                            <h3>User Access Management</h3>
+                            <p className="modal-sub">Grant platform credentials to single students or upload bulk spreadsheets</p>
+                        </div>
                     </div>
                     <button type="button" className="modal-close" onClick={onClose}>&times;</button>
                 </div>

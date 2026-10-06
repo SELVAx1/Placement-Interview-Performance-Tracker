@@ -101,14 +101,14 @@ function DepartmentDashboard({ user, onLogout }) {
             {/* Top Navbar Header */}
             <header className="desktop-navbar">
                 <div className="nav-left">
-                    <div className="brand-icon" style={{ background: '#7c3aed' }}>
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '20px', height: '20px', color: '#fff' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 4h4" />
-                        </svg>
+                    <div className="brand-icon" title="Placement Intervention System">
+                        <img src="/static/icon.png" alt="Placement Intervention System" />
                     </div>
-                    <div>
-                        <h1 className="brand-title">Department Workspace</h1>
-                        <p className="brand-subtitle">{deptData?.department?.name || 'Computer Science & Engineering'} &bull; Department Head Overview</p>
+                    <div className="brand-text">
+                        <span className="portal-name">Placement Intervention System</span>
+                        <span className="portal-sub">
+                            {deptData?.department?.name || 'Computer Science & Engineering'} &bull; <span className="brand-tagline-badge">Dept Head</span>
+                        </span>
                     </div>
                 </div>
 
@@ -304,6 +304,7 @@ function DepartmentDashboard({ user, onLogout }) {
                                                 <th style={{ padding: '12px' }}>STUDENT NAME</th>
                                                 <th style={{ padding: '12px' }}>REG NUMBER</th>
                                                 <th style={{ padding: '12px' }}>CGPA</th>
+                                                <th style={{ padding: '12px' }}>MONTHLY SOLVED</th>
                                                 <th style={{ padding: '12px' }}>STATUS</th>
                                                 <th style={{ padding: '12px' }}>OFFER / COMPANY</th>
                                                 <th style={{ padding: '12px' }}>ASSIGNED MENTOR</th>
@@ -313,17 +314,40 @@ function DepartmentDashboard({ user, onLogout }) {
                                         <tbody>
                                             {filteredStudents.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan="7" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>No students found matching filters.</td>
+                                                    <td colSpan="8" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>No students found matching filters.</td>
                                                 </tr>
                                             ) : (
                                                 filteredStudents.map(st => (
                                                     <tr key={st.student_id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#f8fafc' }}>
                                                         <td style={{ padding: '12px' }}>
                                                             <div style={{ fontWeight: 'bold' }}>{st.name}</div>
-                                                            <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{st.email}</div>
+                                                            <div style={{ color: '#94a3b8', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <span>{st.email}</span>
+                                                                {st.resume_url && (
+                                                                    <a href={st.resume_url} target="_blank" rel="noopener noreferrer" style={{ color: '#a78bfa', textDecoration: 'none', fontWeight: '600' }}>
+                                                                        📄 Resume
+                                                                    </a>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                         <td style={{ padding: '12px', color: '#94a3b8', fontSize: '0.85rem' }}>{st.register_number}</td>
                                                         <td style={{ padding: '12px', color: '#34d399', fontWeight: 'bold' }}>{st.cgpa}</td>
+                                                        <td style={{ padding: '12px' }}>
+                                                            <span style={{
+                                                                padding: '3px 8px',
+                                                                borderRadius: '6px',
+                                                                background: 'rgba(249,115,22,0.15)',
+                                                                color: '#fdba74',
+                                                                fontWeight: '700',
+                                                                fontSize: '0.8rem',
+                                                                border: '1px solid rgba(249,115,22,0.3)',
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px'
+                                                            }}>
+                                                                🔥 {st.monthly_total_solved || 0}
+                                                            </span>
+                                                        </td>
                                                         <td style={{ padding: '12px' }}>
                                                             <span style={{
                                                                 padding: '4px 10px',
@@ -471,20 +495,161 @@ function DepartmentDashboard({ user, onLogout }) {
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {/* Academic Overview */}
                             <div style={{ background: '#1e293b', padding: '16px', borderRadius: '8px', border: '1px solid #334155' }}>
-                                <h4 style={{ color: '#a78bfa', fontSize: '0.9rem', marginBottom: '8px' }}>Academic Overview</h4>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <h4 style={{ color: '#a78bfa', fontSize: '0.9rem', margin: 0 }}>Academic Overview</h4>
+                                    {selectedStudent.resume_url && (
+                                        <a
+                                            href={selectedStudent.resume_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                background: 'rgba(16, 185, 129, 0.2)',
+                                                color: '#34d399',
+                                                border: '1px solid rgba(16, 185, 129, 0.4)',
+                                                padding: '3px 8px',
+                                                borderRadius: '5px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: '600',
+                                                textDecoration: 'none'
+                                            }}
+                                        >
+                                            📄 View Resume
+                                        </a>
+                                    )}
+                                </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', color: '#cbd5e1', fontSize: '0.85rem' }}>
                                     <div>CGPA: <strong style={{ color: '#34d399' }}>{selectedStudent.cgpa}</strong></div>
                                     <div>10th %: <strong style={{ color: '#fff' }}>{selectedStudent.tenth}%</strong></div>
                                     <div>12th %: <strong style={{ color: '#fff' }}>{selectedStudent.twelfth}%</strong></div>
                                     <div>Status: <strong style={{ color: selectedStudent.status === 'Placed' ? '#34d399' : '#f87171' }}>{selectedStudent.status}</strong></div>
+                                    <div>Phone: <strong style={{ color: '#fff' }}>{selectedStudent.phone || 'N/A'}</strong></div>
+                                    <div>Email: <strong style={{ color: '#fff' }}>{selectedStudent.email}</strong></div>
+                                </div>
+
+                                {/* Social Links */}
+                                <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.8rem' }}>
+                                    {selectedStudent.linkedin_url && (
+                                        <a href={selectedStudent.linkedin_url.startsWith('http') ? selectedStudent.linkedin_url : `https://${selectedStudent.linkedin_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: '600' }}>
+                                            🔗 LinkedIn
+                                        </a>
+                                    )}
+                                    {selectedStudent.github_url && (
+                                        <a href={selectedStudent.github_url.startsWith('http') ? selectedStudent.github_url : `https://${selectedStudent.github_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#a78bfa', textDecoration: 'none', fontWeight: '600' }}>
+                                            🐙 GitHub
+                                        </a>
+                                    )}
+                                    {selectedStudent.portfolio_url && (
+                                        <a href={selectedStudent.portfolio_url.startsWith('http') ? selectedStudent.portfolio_url : `https://${selectedStudent.portfolio_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#34d399', textDecoration: 'none', fontWeight: '600' }}>
+                                            🌐 Portfolio
+                                        </a>
+                                    )}
                                 </div>
                             </div>
 
+                            {/* Competitive Coding Platform & Monthly Solved Activity */}
+                            <div style={{ background: '#1e293b', padding: '16px', borderRadius: '8px', border: '1px solid #334155' }}>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.2), rgba(249, 115, 22, 0.08))',
+                                    border: '1px solid rgba(249, 115, 22, 0.4)',
+                                    borderRadius: '6px',
+                                    padding: '10px 14px',
+                                    marginBottom: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between'
+                                }}>
+                                    <div>
+                                        <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#fb923c', textTransform: 'uppercase' }}>Competitive Coding Activity</span>
+                                        <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#fff', marginTop: '2px' }}>
+                                            🔥 {selectedStudent.monthly_total_solved || 0} Solved This Month
+                                        </div>
+                                    </div>
+                                    <span style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#fdba74', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: '700' }}>
+                                        Monthly Total
+                                    </span>
+                                </div>
+
+                                {/* 5 Platforms Grid */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' }}>
+                                    {/* LeetCode */}
+                                    <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <strong style={{ color: '#fbbf24', fontSize: '0.78rem' }}>LeetCode</strong>
+                                            {selectedStudent.leetcode_handle && (
+                                                <a href={`https://leetcode.com/u/${selectedStudent.leetcode_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.leetcode_handle || '—'}</div>
+                                        <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                            {selectedStudent.leetcode_solved_month || 0} this mo
+                                        </div>
+                                    </div>
+
+                                    {/* Codeforces */}
+                                    <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <strong style={{ color: '#60a5fa', fontSize: '0.78rem' }}>Codeforces</strong>
+                                            {selectedStudent.codeforces_handle && (
+                                                <a href={`https://codeforces.com/profile/${selectedStudent.codeforces_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.codeforces_handle || '—'}</div>
+                                        <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                            {selectedStudent.codeforces_solved_month || 0} this mo
+                                        </div>
+                                    </div>
+
+                                    {/* CodeChef */}
+                                    <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <strong style={{ color: '#d97706', fontSize: '0.78rem' }}>CodeChef</strong>
+                                            {selectedStudent.codechef_handle && (
+                                                <a href={`https://www.codechef.com/users/${selectedStudent.codechef_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.codechef_handle || '—'}</div>
+                                        <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                            {selectedStudent.codechef_solved_month || 0} this mo
+                                        </div>
+                                    </div>
+
+                                    {/* HackerRank */}
+                                    <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <strong style={{ color: '#10b981', fontSize: '0.78rem' }}>HackerRank</strong>
+                                            {selectedStudent.hackerrank_handle && (
+                                                <a href={`https://www.hackerrank.com/profile/${selectedStudent.hackerrank_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.hackerrank_handle || '—'}</div>
+                                        <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                            {selectedStudent.hackerrank_solved_month || 0} this mo
+                                        </div>
+                                    </div>
+
+                                    {/* AtCoder */}
+                                    <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <strong style={{ color: '#a855f7', fontSize: '0.78rem' }}>AtCoder</strong>
+                                            {selectedStudent.atcoder_handle && (
+                                                <a href={`https://atcoder.jp/users/${selectedStudent.atcoder_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.atcoder_handle || '—'}</div>
+                                        <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                            {selectedStudent.atcoder_solved_month || 0} this mo
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Assigned Supervisor */}
                             <div style={{ background: '#1e293b', padding: '16px', borderRadius: '8px', border: '1px solid #334155' }}>
                                 <h4 style={{ color: '#a78bfa', fontSize: '0.9rem', marginBottom: '8px' }}>Assigned Supervisor</h4>
                                 <p style={{ color: '#f8fafc', fontSize: '0.9rem', fontWeight: 'bold' }}>{selectedStudent.assigned_mentor}</p>
-                                <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Email: {selectedStudent.email}</p>
+                                <p style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Supervisor Email: {selectedStudent.email}</p>
                             </div>
 
                             {selectedStudent.company && (

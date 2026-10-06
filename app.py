@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any
 import os
 import uvicorn
 import io
@@ -78,6 +79,12 @@ async def login(credentials: LoginRequest):
         }
     )
 
+class RoundItemRequest(BaseModel):
+    round_number: Optional[int] = None
+    round_name: str
+    round_type: Optional[str] = "TECHNICAL"
+    description: Optional[str] = ""
+
 class CreateDriveRequest(BaseModel):
     company_name: str
     job_role: str
@@ -86,7 +93,23 @@ class CreateDriveRequest(BaseModel):
     allowed_branches: str = "All"
     location: str = "On Campus"
     status: str = "Active"
-    deadline: str = None
+    deadline: Optional[str] = None
+    description: Optional[str] = None
+    total_rounds: Optional[int] = 4
+    rounds: Optional[List[RoundItemRequest]] = None
+
+class UpdateDriveRequest(BaseModel):
+    company_name: Optional[str] = None
+    job_role: Optional[str] = None
+    ctc_lpa: Optional[float] = None
+    min_cgpa: Optional[float] = None
+    allowed_branches: Optional[str] = None
+    location: Optional[str] = None
+    status: Optional[str] = None
+    deadline: Optional[str] = None
+    description: Optional[str] = None
+    total_rounds: Optional[int] = None
+    rounds: Optional[List[RoundItemRequest]] = None
 
 @app.get("/api/users")
 async def list_demo_users():
@@ -104,12 +127,14 @@ async def list_drives():
 
 @app.post("/api/drives")
 async def create_new_drive(drive_data: CreateDriveRequest):
-    """Endpoint for Coordinator to create a new placement drive."""
+    """Endpoint for Coordinator to create a new placement drive with custom rounds and description."""
     if not drive_data.company_name.strip() or not drive_data.job_role.strip():
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"success": False, "message": "Company name and job role are required."}
         )
+    
+    rounds_dicts = [r.dict() for r in drive_data.rounds] if drive_data.rounds else None
     
     new_drive = db.create_drive(
         company_name=drive_data.company_name.strip(),
@@ -119,12 +144,47 @@ async def create_new_drive(drive_data: CreateDriveRequest):
         allowed_branches=drive_data.allowed_branches.strip(),
         location=drive_data.location.strip(),
         status=drive_data.status.strip() if drive_data.status else "Active",
-        deadline=drive_data.deadline
+        deadline=drive_data.deadline,
+        description=drive_data.description.strip() if drive_data.description else None,
+        total_rounds=drive_data.total_rounds or (len(rounds_dicts) if rounds_dicts else 4),
+        rounds=rounds_dicts
     )
     new_drive["results_count"] = 0
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
-        content={"success": True, "message": "Drive created successfully!", "drive": new_drive}
+        content={"success": True, "message": "Drive initialized successfully!", "drive": new_drive}
+    )
+
+@app.put("/api/drives/{drive_id}")
+async def update_existing_drive(drive_id: str, drive_data: UpdateDriveRequest):
+    """Endpoint for Coordinator to alter/update an existing placement drive, description, and round pipeline."""
+    rounds_dicts = [r.dict() for r in drive_data.rounds] if drive_data.rounds is not None else None
+
+    updated = db.update_drive(
+        drive_id=drive_id,
+        company_name=drive_data.company_name.strip() if drive_data.company_name else None,
+        job_role=drive_data.job_role.strip() if drive_data.job_role else None,
+        ctc_lpa=drive_data.ctc_lpa,
+        min_cgpa=drive_data.min_cgpa,
+        allowed_branches=drive_data.allowed_branches.strip() if drive_data.allowed_branches else None,
+        location=drive_data.location.strip() if drive_data.location else None,
+        status=drive_data.status.strip() if drive_data.status else None,
+        deadline=drive_data.deadline,
+        description=drive_data.description.strip() if drive_data.description is not None else None,
+        total_rounds=drive_data.total_rounds,
+        rounds=rounds_dicts
+    )
+
+    if not updated:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"success": False, "message": f"Drive with id '{drive_id}' not found."}
+        )
+
+    updated["results_count"] = db.get_drive_results_count(drive_id)
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"success": True, "message": "Drive updated successfully!", "drive": updated}
     )
 
 @app.get("/api/drives/{drive_id}/results")
@@ -132,6 +192,75 @@ async def get_drive_results(drive_id: str):
     """Retrieve all student evaluation results for a specific drive."""
     results = db.get_drive_results(drive_id)
     return {"success": True, "results": results, "count": len(results)}
+
+@app.get("/api/drives/{drive_id}/process")
+async def get_drive_interview_process(drive_id: str):
+    """Retrieve complete interview stages pipeline, per-round funnels, and selected students for a drive."""
+    process_data = db.get_drive_process_details(drive_id)
+    if not process_data:
+        raise HTTPException(status_code=404, detail=f"Placement drive with ID '{drive_id}' was not found.")
+    return {"success": True, **process_data}
+
+class AdvanceCandidateRequest(BaseModel):
+    gmail: str
+    action: Optional[str] = "advance"  # "advance", "select", "reject", "offer"
+    round_num: Optional[int] = None
+    score: Optional[float] = None
+    feedback: Optional[str] = None
+
+@app.post("/api/drives/{drive_id}/advance-candidate")
+async def advance_drive_candidate_endpoint(drive_id: str, req: AdvanceCandidateRequest):
+    """Coordinator directly advances, shortlists, selects, or rejects a candidate in a drive."""
+    drive = db.get_drive(drive_id)
+    if not drive:
+        raise HTTPException(status_code=404, detail=f"Placement drive with ID '{drive_id}' was not found.")
+    total_rounds = drive.get("total_rounds", 4)
+    res = db.advance_or_update_candidate(
+        drive_id=drive_id,
+        gmail=req.gmail,
+        action=req.action,
+        total_rounds=total_rounds,
+        score=req.score,
+        feedback=req.feedback,
+        round_num=req.round_num
+    )
+    return {"success": True, "message": f"Candidate status updated to {res['result']}.", "result": res}
+
+
+@app.get("/api/drives/{drive_id}/export/selected")
+@app.get("/api/export/drive-selected/{drive_id}")
+def export_drive_selected_students_endpoint(drive_id: str, format: str = "xlsx"):
+    """Export styled Excel / CSV containing all students who were selected by the hiring company."""
+    drive = db.get_drive(drive_id)
+    if not drive:
+        raise HTTPException(status_code=404, detail=f"Drive with ID '{drive_id}' was not found.")
+    process_data = db.get_drive_process_details(drive_id)
+    selected_students = process_data.get("selected_students", []) if process_data else []
+    return bulk_exporter.export_selected_students_data(selected_students, drive_info=drive, format_type=format)
+
+@app.get("/api/drives/{drive_id}/export/round/{round_num}/template")
+@app.get("/api/export/round-template/{drive_id}/{round_num}")
+def export_round_update_template_endpoint(drive_id: str, round_num: int, format: str = "xlsx"):
+    """
+    Export update Excel / CSV template for a specific interview round, pre-populated with
+    all student names and emails who cleared the previous round or are scheduled for this round.
+    """
+    drive = db.get_drive(drive_id)
+    if not drive:
+        raise HTTPException(status_code=404, detail=f"Drive with ID '{drive_id}' was not found.")
+    
+    # Pre-populate students who cleared the previous/current round into this round's template
+    round_students = db.get_candidates_for_round_template(drive_id, round_num)
+    
+    process_data = db.get_drive_process_details(drive_id)
+    rounds = process_data.get("rounds", []) if process_data else []
+    target_round = next((r for r in rounds if r["round_number"] == round_num), None)
+    if not target_round:
+        target_round = {"round_number": round_num, "round_name": f"Round {round_num}"}
+    
+    return bulk_exporter.export_round_update_template_data(
+        round_students, drive_info=drive, round_info=target_round, format_type=format
+    )
 
 
 # ==============================================================
@@ -267,6 +396,7 @@ async def upload_drive_results_endpoint(drive_id: str, file: UploadFile = File(.
         db.record_upload_log("Drive Results", file.filename, 0, 0, 0, status=f"FAILED: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
+    base_round = drive.get("current_round", 1) if drive else 1
     processed_records = []
     for item in records:
         verdict = item.get("verdict") or "Shortlisted"
@@ -274,8 +404,13 @@ async def upload_drive_results_endpoint(drive_id: str, file: UploadFile = File(.
             drive_id=drive_id,
             email=item["email"],
             verdict=verdict,
-            round_num=item.get("round"),
-            score=item.get("score")
+            round_num=item.get("round") or base_round,
+            score=item.get("score"),
+            max_score=item.get("max_score"),
+            feedback=item.get("feedback"),
+            weakness_area=item.get("weakness_area"),
+            rejection_reason=item.get("rejection_reason"),
+            attempt_date=item.get("attempt_date")
         )
         processed_records.append(res)
 
@@ -326,7 +461,7 @@ async def upload_drive_results(drive_id: str, file: UploadFile = File(...)):
                 drive_id=drive_id,
                 email=item["email"],
                 verdict=item["verdict"],
-                round_num=item.get("round"),
+                round_num=item.get("round") or base_round,
                 score=item.get("score"),
                 max_score=item.get("max_score"),
                 feedback=item.get("feedback"),
@@ -427,6 +562,8 @@ async def upload_student_roster(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=str(e))
 
     processed_students = []
+    created_count = 0
+    updated_count = 0
     for item in records:
         res = db.upsert_student_roster_record(
             register_number=item["register_number"],
@@ -436,8 +573,13 @@ async def upload_student_roster(file: UploadFile = File(...)):
             cgpa=item["cgpa"],
             tenth=item.get("tenth_percentage"),
             twelfth=item.get("twelfth_percentage"),
-            skills=item.get("skills", "")
+            skills=item.get("skills", ""),
+            year=item.get("year", "4th Year")
         )
+        if res.get("action") == "Updated":
+            updated_count += 1
+        else:
+            created_count += 1
         processed_students.append(res)
 
     db.record_upload_log(
@@ -451,9 +593,11 @@ async def upload_student_roster(file: UploadFile = File(...)):
 
     return JSONResponse(status_code=status.HTTP_200_OK, content={
         "success": True,
-        "message": f"Successfully imported {len(processed_students)} student academic profiles.",
+        "message": f"Successfully processed {len(processed_students)} student academic profiles ({created_count} registered, {updated_count} auto-updated).",
         "total_rows": len(records) + skipped_count,
         "imported_count": len(processed_students),
+        "created_count": created_count,
+        "updated_count": updated_count,
         "skipped_count": skipped_count,
         "students": processed_students
     })
@@ -582,6 +726,72 @@ def export_user_access(format: str = "xlsx"):
     return bulk_exporter.export_user_access_data(users, format_type=format)
 
 
+# ==============================================================
+# COORDINATOR: STUDENT TRACKING (YEAR-WISE & DEPT-WISE)
+# ==============================================================
+
+@app.get("/api/coordinator/students-tracking")
+def get_coordinator_students_tracking(
+    year: str = None,
+    department: str = None,
+    search: str = None,
+    status: str = None
+):
+    result = db.get_coordinator_students_tracking(
+        year=year,
+        department=department,
+        search=search,
+        status=status
+    )
+    return {"success": True, **result}
+
+
+@app.get("/api/coordinator/export/students-tracking")
+def export_coordinator_students_tracking(
+    year: str = None,
+    department: str = None,
+    search: str = None,
+    status: str = None,
+    format: str = "xlsx"
+):
+    data = db.get_coordinator_students_tracking(
+        year=year,
+        department=department,
+        search=search,
+        status=status
+    )
+    filter_meta = {"year": year, "department": department}
+    return bulk_exporter.export_students_tracking_data(
+        data.get("students", []),
+        filter_meta=filter_meta,
+        format_type=format
+    )
+
+
+@app.get("/api/coordinator/student/{identifier}")
+def get_coordinator_student_detail(identifier: str):
+    """
+    Retrieve individual student comprehensive dossier (academic profile, interview history, interventions, and action roadmap).
+    """
+    student = db.get_coordinator_student_dossier(identifier)
+    if not student:
+        raise HTTPException(status_code=404, detail=f"Student with identifier '{identifier}' not found")
+    return {"success": True, "student": student}
+
+
+@app.get("/api/coordinator/export/student/{identifier}")
+def export_coordinator_individual_student_dossier(identifier: str, format: str = "xlsx"):
+    """
+    Download complete multi-sheet Excel dossier & intervention template for a specific individual student.
+    """
+    student = db.get_coordinator_student_dossier(identifier)
+    if not student:
+        raise HTTPException(status_code=404, detail=f"Student with identifier '{identifier}' not found")
+    return bulk_exporter.export_individual_student_dossier(student, format_type=format)
+
+
+
+
 # ==========================================
 # STUDENT API ENDPOINTS
 # ==========================================
@@ -598,18 +808,87 @@ async def get_student_profile(gmail: str):
         email_clean = gmail.strip().lower()
         default_name = email_clean.split("@")[0].replace(".", " ").title()
         profile = {
-            "student_id": "demo-id",
-            "register_number": "312321104012",
+            "student_id": "",
+            "register_number": "",
             "name": default_name,
             "email": email_clean,
-            "department": "CSE",
-            "cgpa": 8.4,
-            "tenth_percentage": 91.5,
-            "twelfth_percentage": 88.0,
-            "skills": "Python, Data Structures, React, SQL",
-            "skills_list": ["Python", "Data Structures", "React", "SQL"]
+            "department": "",
+            "cgpa": None,
+            "tenth_percentage": None,
+            "twelfth_percentage": None,
+            "skills": "",
+            "skills_list": [],
+            "monthly_total_solved": 0,
+            "coding_profiles": {
+                "monthly_total_solved": 0,
+                "leetcode": {"handle": "", "solved_month": 0, "total_solved": 0},
+                "codeforces": {"handle": "", "solved_month": 0, "rating": 0},
+                "codechef": {"handle": "", "solved_month": 0, "stars": ""},
+                "hackerrank": {"handle": "", "solved_month": 0, "score": 0},
+                "atcoder": {"handle": "", "solved_month": 0, "rating": 0}
+            }
         }
     return {"success": True, "profile": profile}
+
+class StudentProfileUpdateRequest(BaseModel):
+    gmail: str
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    department: Optional[str] = None
+    year: Optional[str] = None
+    cgpa: Optional[float] = None
+    tenth_percentage: Optional[float] = None
+    twelfth_percentage: Optional[float] = None
+    skills: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    github_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    resume_filename: Optional[str] = None
+    resume_url: Optional[str] = None
+    # Coding platform profiles
+    leetcode_handle: Optional[str] = None
+    leetcode_solved_month: Optional[int] = None
+    leetcode_total_solved: Optional[int] = None
+    codeforces_handle: Optional[str] = None
+    codeforces_solved_month: Optional[int] = None
+    codeforces_rating: Optional[int] = None
+    codechef_handle: Optional[str] = None
+    codechef_solved_month: Optional[int] = None
+    codechef_stars: Optional[str] = None
+    hackerrank_handle: Optional[str] = None
+    hackerrank_solved_month: Optional[int] = None
+    hackerrank_score: Optional[int] = None
+    atcoder_handle: Optional[str] = None
+    atcoder_solved_month: Optional[int] = None
+    atcoder_rating: Optional[int] = None
+
+@app.put("/api/student/profile")
+async def update_student_profile_endpoint(profile_data: StudentProfileUpdateRequest):
+    """updateStudentProfile() — Update student personal details, resume, and coding platforms with auto-calculated monthly sum."""
+    if not profile_data.gmail or not profile_data.gmail.strip():
+        raise HTTPException(status_code=400, detail="Student email is required.")
+    
+    update_dict = {k: v for k, v in profile_data.dict().items() if v is not None}
+
+    # Official academic & institutional fields are locked against modification by students:
+    # Students cannot alter their CGPA, 10th %, 12th %, department, register number, or email.
+    # These fields are strictly auto-updated when the Placement Coordinator imports the official Excel roster.
+    LOCKED_STUDENT_FIELDS = {
+        "cgpa", "tenth_percentage", "twelfth_percentage",
+        "department", "register_number", "email", "gmail"
+    }
+    for field in LOCKED_STUDENT_FIELDS:
+        update_dict.pop(field, None)
+
+    updated_profile = db.update_student_profile(profile_data.gmail, update_dict, is_student=True)
+    if not updated_profile:
+        raise HTTPException(status_code=500, detail="Failed to update student profile.")
+    
+    return {
+        "success": True,
+        "message": "Student profile updated successfully.",
+        "profile": updated_profile
+    }
 
 @app.get("/api/student/results")
 async def get_student_results(gmail: str):
@@ -637,8 +916,8 @@ async def get_student_applications(gmail: str):
 @app.post("/api/student/apply")
 async def apply_student_drive(req: StudentApplyRequest):
     """applyJobApplication() — Apply student to a placement drive."""
-    res = db.increment_student_drive_round(req.drive_id, req.gmail)
-    return {"success": True, "message": "Successfully registered for drive", "registration": res}
+    res = db.register_student_for_drive(req.drive_id, req.gmail)
+    return {"success": True, "message": "Successfully applied for drive. You are enrolled to appear in Round 1.", "registration": res}
 
 @app.get("/api/student/analysis")
 async def get_student_analysis(gmail: str):
@@ -680,6 +959,24 @@ class InterventionActionRequest(BaseModel):
     notes: str = None
 
 
+class CustomInterventionRequest(BaseModel):
+    student_id: str = None
+    gmail: str = None
+    title: str
+    failure_summary: str = ""
+    ai_analysis: str = ""
+    priority: str = "MEDIUM"
+    actions: list[dict] = []
+
+
+class AddActionRequest(BaseModel):
+    title: str
+    weakness_area: str = None
+    resources: str = None
+    assigned_to: str = None
+    due_date: str = None
+
+
 def _requester(user_id: str, role: str, department: str):
     if not user_id:
         raise HTTPException(status_code=401, detail="X-User-Id is required")
@@ -693,18 +990,61 @@ def _requester(user_id: str, role: str, department: str):
 
 
 def _scoped_student(user: dict, student_id: str = None, gmail: str = None):
+    role = (user.get("role") or "").strip().lower()
+    is_coord = role in {"coordinator", "admin"}
+
     students = db.get_students_for_scope(user["uuid"], user["role"], user.get("department"))
     target = None
+    clean_id = (student_id or "").strip()
+    clean_gmail = (gmail or "").strip().lower()
+
     for student in students:
-        if (student_id and student["uuid"] == student_id) or (gmail and student["gmail"].lower() == gmail.strip().lower()):
+        s_uuid = str(student.get("uuid") or "").strip()
+        s_auth_uuid = str(student.get("auth_uuid") or "").strip()
+        s_student_id = str(student.get("student_id") or "").strip()
+        s_gmail = (student.get("gmail") or student.get("email") or "").strip().lower()
+
+        matches_id = bool(clean_id and (clean_id in {s_uuid, s_auth_uuid, s_student_id}))
+        matches_gmail = bool(clean_gmail and s_gmail == clean_gmail)
+
+        if matches_id or matches_gmail:
             target = student
             break
+
+    # If not found in scoped list but user is Coordinator/Admin, search directly across all students in system
+    if not target and is_coord:
+        if clean_gmail:
+            p = db.get_student_profile_by_email(clean_gmail)
+            if p:
+                return {
+                    "uuid": p.get("student_id"),
+                    "student_id": p.get("student_id"),
+                    "gmail": p["email"],
+                    "department": p.get("department", "CSE"),
+                    "role": "student",
+                    "name": p.get("name", "")
+                }
+        if clean_id:
+            p = db.get_student_profile(clean_id)
+            if p:
+                return {
+                    "uuid": p.get("student_id"),
+                    "student_id": p.get("student_id"),
+                    "gmail": p["email"],
+                    "department": p.get("department", "CSE"),
+                    "role": "student",
+                    "name": p.get("name", "")
+                }
+
     if not target:
         raise HTTPException(status_code=403, detail="You are not allowed to access this student")
     return target
 
 
 def _visible_interventions(user: dict):
+    role = (user.get("role") or "").strip().lower()
+    if role in {"coordinator", "admin"}:
+        return db.get_interventions()
     students = db.get_students_for_scope(user["uuid"], user["role"], user.get("department"))
     return db.get_interventions(student_gmails=[student["gmail"] for student in students])
 
@@ -727,7 +1067,7 @@ async def list_intervention_students(
 ):
     user = _requester(x_user_id, x_user_role, x_department)
     students = db.get_students_for_scope(user["uuid"], user["role"], user.get("department"))
-    visible_interventions = db.get_interventions(student_gmails=[student["gmail"] for student in students])
+    visible_interventions = _visible_interventions(user)
     by_gmail = {}
     for intervention in visible_interventions:
         by_gmail.setdefault(intervention["student_gmail"].lower(), []).append(intervention)
@@ -773,23 +1113,10 @@ async def generate_intervention(
     previous = db.get_interventions(student_gmail=student["gmail"])
     previous_actions = [action for item in previous for action in item.get("actions", [])]
 
-    try:
-        intervention, actions = intervention_service.build_intervention(
-            student, patterns, previous_actions, user["uuid"]
-        )
-        saved = db.save_intervention(intervention, actions)
-    except intervention_service.AgentRateLimitError as exc:
-        raise HTTPException(
-            status_code=429,
-            detail=str(exc),
-            headers={"Retry-After": str(exc.retry_after)},
-        ) from exc
-    except intervention_service.AgentConfigurationError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-    except intervention_service.AgentResponseError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Intervention generation failed: {exc}") from exc
+    intervention, actions = intervention_service.build_intervention(
+        student, patterns, previous_actions, user["uuid"]
+    )
+    saved = db.save_intervention(intervention, actions)
 
     return {"success": True, "intervention": saved, "analysis": patterns}
 
@@ -817,14 +1144,77 @@ async def generate_all_interventions(
                 student, patterns, previous_actions, user["uuid"]
             )
             generated.append(db.save_intervention(intervention, actions))
-        except intervention_service.AgentConfigurationError as exc:
-            failures.append({"student_id": student["uuid"], "gmail": student["gmail"], "error": str(exc)})
-        except intervention_service.AgentResponseError as exc:
-            failures.append({"student_id": student["uuid"], "gmail": student["gmail"], "error": str(exc)})
         except Exception as exc:
-            failures.append({"student_id": student["uuid"], "gmail": student["gmail"], "error": f"Generation failed: {exc}"})
+            failures.append({"student_id": student.get("uuid"), "gmail": student.get("gmail"), "error": str(exc)})
 
     return {"success": len(failures) == 0, "generated": generated, "failures": failures}
+
+
+@app.post("/api/interventions/custom")
+async def create_custom_intervention_endpoint(
+    request: CustomInterventionRequest,
+    x_user_id: str = Header(None),
+    x_user_role: str = Header(None),
+    x_department: str = Header(None),
+):
+    user = _requester(x_user_id, x_user_role, x_department)
+    if user["role"].strip().lower() == "student":
+        raise HTTPException(status_code=403, detail="Students cannot create interventions")
+    if not request.student_id and not request.gmail:
+        raise HTTPException(status_code=400, detail="student_id or gmail is required")
+    student = _scoped_student(user, request.student_id, request.gmail)
+    s_id = student.get("uuid") or student.get("student_id") or str(uuid.uuid4())
+    s_gmail = (student.get("gmail") or student.get("email") or "").strip().lower()
+    created = db.create_custom_intervention(
+        student_id=s_id,
+        student_gmail=s_gmail,
+        title=request.title,
+        failure_summary=request.failure_summary,
+        ai_analysis=request.ai_analysis,
+        priority=request.priority,
+        created_by=user.get("gmail", "coordinator@gmail.com"),
+        actions=request.actions
+    )
+    return {"success": True, "intervention": created}
+
+
+@app.post("/api/interventions/{intervention_id}/actions")
+async def add_action_endpoint(
+    intervention_id: str,
+    request: AddActionRequest,
+    x_user_id: str = Header(None),
+    x_user_role: str = Header(None),
+    x_department: str = Header(None),
+):
+    user = _requester(x_user_id, x_user_role, x_department)
+    if user["role"].strip().lower() == "student":
+        raise HTTPException(status_code=403, detail="Students cannot add intervention actions")
+    visible = {item["id"] for item in _visible_interventions(user)}
+    if intervention_id not in visible:
+        raise HTTPException(status_code=403, detail="You are not allowed to update this intervention")
+    action = db.add_intervention_action(
+        intervention_id=intervention_id,
+        title=request.title,
+        weakness_area=request.weakness_area,
+        resources=request.resources,
+        assigned_to=request.assigned_to,
+        due_date=request.due_date
+    )
+    return {"success": True, "action": action}
+
+
+@app.delete("/api/interventions/{intervention_id}")
+async def delete_intervention_endpoint(
+    intervention_id: str,
+    x_user_id: str = Header(None),
+    x_user_role: str = Header(None),
+    x_department: str = Header(None),
+):
+    user = _requester(x_user_id, x_user_role, x_department)
+    if user["role"].strip().lower() not in {"coordinator", "admin"}:
+        raise HTTPException(status_code=403, detail="Only coordinators can delete interventions")
+    db.delete_intervention(intervention_id)
+    return {"success": True, "message": "Intervention removed successfully"}
 
 
 @app.patch("/api/interventions/{intervention_id}/status")
@@ -838,7 +1228,7 @@ async def change_intervention_status(
     user = _requester(x_user_id, x_user_role, x_department)
     if user["role"].strip().lower() == "student":
         raise HTTPException(status_code=403, detail="Students cannot update intervention status")
-    allowed = {"OPEN", "IN_PROGRESS", "COMPLETED", "CANCELLED"}
+    allowed = {"OPEN", "IN_PROGRESS", "COMPLETED", "RESOLVED", "CANCELLED"}
     new_status = request.status.strip().upper()
     if new_status not in allowed:
         raise HTTPException(status_code=400, detail=f"status must be one of {sorted(allowed)}")
@@ -873,12 +1263,34 @@ async def change_intervention_action(
 
 @app.post("/api/student/resume-upload")
 async def upload_student_resume(file: UploadFile = File(...), gmail: str = Form("student@gmail.com")):
-    """resumeUpload() — Upload student resume file."""
+    """resumeUpload() — Upload and store student resume file, linking it to profile across all dashboards."""
     filename = file.filename.lower()
     if not (filename.endswith(".pdf") or filename.endswith(".doc") or filename.endswith(".docx")):
         return JSONResponse(status_code=400, content={"success": False, "message": "Only PDF and Word documents are allowed."})
     
-    return {"success": True, "message": "Resume uploaded successfully.", "resume_path": file.filename}
+    # Save file physically into public/uploads/resumes/
+    resumes_dir = os.path.join(os.path.dirname(__file__), "public", "uploads", "resumes")
+    os.makedirs(resumes_dir, exist_ok=True)
+
+    clean_base = os.path.basename(file.filename).replace(" ", "_")
+    dest_path = os.path.join(resumes_dir, clean_base)
+    contents = await file.read()
+    with open(dest_path, "wb") as f:
+        f.write(contents)
+
+    resume_url = f"/static/uploads/resumes/{clean_base}"
+    db.update_student_profile(gmail, {
+        "resume_filename": file.filename,
+        "resume_url": resume_url
+    })
+
+    return {
+        "success": True,
+        "message": "Resume uploaded successfully.",
+        "resume_path": file.filename,
+        "resume_filename": file.filename,
+        "resume_url": resume_url
+    }
 
 
 # ==========================================
@@ -942,6 +1354,13 @@ async def get_department_dashboard(dept: str = "CSE"):
 PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "public")
 if os.path.exists(PUBLIC_DIR):
     app.mount("/static", StaticFiles(directory=PUBLIC_DIR), name="static")
+
+@app.get("/favicon.ico")
+async def serve_favicon():
+    fav_path = os.path.join(PUBLIC_DIR, "favicon.ico")
+    if os.path.exists(fav_path):
+        return FileResponse(fav_path)
+    return JSONResponse(status_code=404, content={"message": "Favicon not found"})
 
 @app.get("/")
 async def serve_index():

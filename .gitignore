@@ -4,3 +4,5 @@ database.db
 *.db
 .env
 .DS_Store
+.pytest_cache/
+public/uploads/

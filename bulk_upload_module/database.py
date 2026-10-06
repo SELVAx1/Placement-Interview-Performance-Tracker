@@ -2,7 +2,10 @@ import sqlite3
 import uuid
 import os
 from datetime import datetime
-from config import DB_PATH
+try:
+    from .config import DB_PATH
+except ImportError:
+    from config import DB_PATH
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -123,6 +126,12 @@ def init_db():
         """, demo_drives)
         conn.commit()
 
+    try:
+        cursor.execute("ALTER TABLE students_roster ADD COLUMN year TEXT DEFAULT '4th Year'")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
+
     conn.close()
 
 
@@ -236,6 +245,10 @@ def process_shortlist_record(drive_id: str, email: str, base_round: int = None):
     cursor = conn.cursor()
     email_clean = email.strip().lower()
 
+    cursor.execute("SELECT total_rounds FROM drives WHERE id = ?", (drive_id,))
+    d_row = cursor.fetchone()
+    total_rounds = d_row["total_rounds"] if (d_row and "total_rounds" in d_row.keys() and d_row["total_rounds"]) else 4
+
     # Find existing student round in this drive
     cursor.execute("SELECT round FROM student_drive_results WHERE drive_id = ? AND LOWER(gmail) = ?", (drive_id, email_clean))
     existing = cursor.fetchone()
@@ -245,7 +258,12 @@ def process_shortlist_record(drive_id: str, email: str, base_round: int = None):
     else:
         new_round = (base_round or 1) + 1
 
-    result_str = f"Shortlisted for Round {new_round}"
+    if new_round <= total_rounds:
+        result_str = f"Shortlisted for Round {new_round}"
+    else:
+        new_round = total_rounds
+        result_str = "Selected"
+
     record_id = str(uuid.uuid4())
 
     cursor.execute("""
@@ -265,11 +283,56 @@ def process_shortlist_record(drive_id: str, email: str, base_round: int = None):
 def process_verdict_record(drive_id: str, email: str, verdict: str, round_num: int = None, score: float = None):
     """
     Verdict Mode: Explicit result status provided in Excel (e.g., 'Selected', 'Rejected').
+    Intermediate round 'Selected' advances candidate to next round.
+    Final round 'Selected' marks candidate as 'Offered'.
     """
+    import re
     conn = get_connection()
     cursor = conn.cursor()
     email_clean = email.strip().lower()
-    verdict_clean = verdict.strip()
+
+    cursor.execute("SELECT total_rounds, current_round FROM drives WHERE id = ?", (drive_id,))
+    d_row = cursor.fetchone()
+    total_rounds = d_row["total_rounds"] if (d_row and "total_rounds" in d_row.keys() and d_row["total_rounds"]) else 4
+    base_round = d_row["current_round"] if (d_row and "current_round" in d_row.keys() and d_row["current_round"]) else 1
+
+    cursor.execute("SELECT round, result FROM student_drive_results WHERE drive_id = ? AND LOWER(gmail) = ?", (drive_id, email_clean))
+    existing = cursor.fetchone()
+
+    eval_round = round_num or (existing["round"] if existing and existing["round"] else base_round) or 1
+
+    v_str = str(verdict or "").strip()
+    v_lower = v_str.lower()
+
+    if any(k in v_lower for k in ["not select", "not-select", "unselect", "reject", "fail", "eliminated", "absent"]):
+        verdict_clean = "Rejected"
+        target_round = eval_round
+    elif re.search(r'round\s*(\d+)', v_lower) and any(w in v_lower for w in ["shortlist", "for round", "to round"]):
+        m_r = re.search(r'round\s*(\d+)', v_lower)
+        target_r = int(m_r.group(1))
+        if target_r <= total_rounds:
+            target_round = target_r
+            verdict_clean = f"Shortlisted for Round {target_r}"
+        else:
+            target_round = total_rounds
+            verdict_clean = "Offered"
+    elif any(k in v_lower for k in ["selecte", "select", "selet", "selct", "pass", "cleared", "passed", "qualif"]):
+        if eval_round < total_rounds:
+            target_round = eval_round + 1
+            verdict_clean = f"Shortlisted for Round {eval_round + 1}"
+        else:
+            target_round = total_rounds
+            verdict_clean = "Selected"
+    elif any(k in v_lower for k in ["offer", "offered", "placed", "hired"]):
+        target_round = total_rounds
+        verdict_clean = "Offered"
+    elif any(k in v_lower for k in ["hold", "waiting", "pending"]):
+        target_round = eval_round
+        verdict_clean = "On Hold"
+    else:
+        target_round = eval_round
+        verdict_clean = v_str.capitalize() if v_str else "Selected"
+
     record_id = str(uuid.uuid4())
 
     cursor.execute("""
@@ -277,15 +340,15 @@ def process_verdict_record(drive_id: str, email: str, verdict: str, round_num: i
         VALUES (?, ?, ?, ?, COALESCE(?, 1), ?, CURRENT_TIMESTAMP)
         ON CONFLICT(drive_id, gmail) DO UPDATE SET
             result = excluded.result,
-            round = COALESCE(excluded.round, student_drive_results.round),
+            round = excluded.round,
             score = COALESCE(excluded.score, student_drive_results.score),
             updated_at = CURRENT_TIMESTAMP
-    """, (record_id, drive_id, email_clean, verdict_clean, round_num, score))
+    """, (record_id, drive_id, email_clean, verdict_clean, target_round, score))
 
     conn.commit()
     conn.close()
 
-    return {"gmail": email_clean, "result": verdict_clean, "round": round_num or 1, "score": score, "status": "Updated"}
+    return {"gmail": email_clean, "result": verdict_clean, "round": target_round or 1, "score": score, "status": "Updated"}
 
 def get_drive_results(drive_id: str):
     conn = get_connection()
@@ -367,7 +430,7 @@ def get_all_users():
 # ==============================================================
 
 def upsert_student_roster_record(register_number: str, name: str, email: str, department: str,
-                                 cgpa: float, tenth: float = None, twelfth: float = None, skills: str = ""):
+                                 cgpa: float, tenth: float = None, twelfth: float = None, skills: str = "", year: str = "4th Year"):
     conn = get_connection()
     cursor = conn.cursor()
     email_clean = email.strip().lower()
@@ -375,20 +438,63 @@ def upsert_student_roster_record(register_number: str, name: str, email: str, de
     student_id = str(uuid.uuid4())
 
     cursor.execute("""
-        INSERT INTO students_roster (
-            student_id, register_number, name, email, department, cgpa, tenth_percentage, twelfth_percentage, skills
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(register_number) DO UPDATE SET
-            name = excluded.name,
-            email = excluded.email,
-            department = excluded.department,
-            cgpa = excluded.cgpa,
-            tenth_percentage = excluded.tenth_percentage,
-            twelfth_percentage = excluded.twelfth_percentage,
-            skills = excluded.skills
-    """, (student_id, reg_clean, name.strip(), email_clean, department.strip().upper(),
-          cgpa, tenth, twelfth, skills.strip()))
+        SELECT student_id, register_number, email FROM students_roster
+        WHERE LOWER(email) = ? OR UPPER(register_number) = ?
+    """, (email_clean, reg_clean))
+    existing = cursor.fetchone()
+
+    if existing:
+        cursor.execute("""
+            UPDATE students_roster SET
+                name = ?,
+                register_number = ?,
+                email = ?,
+                department = ?,
+                cgpa = ?,
+                tenth_percentage = ?,
+                twelfth_percentage = ?,
+                skills = ?,
+                year = COALESCE(?, year, '4th Year'),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE student_id = ?
+        """, (
+            name.strip(),
+            reg_clean,
+            email_clean,
+            department.strip().upper(),
+            cgpa,
+            tenth,
+            twelfth,
+            skills.strip(),
+            year,
+            existing["student_id"]
+        ))
+        action = "Updated"
+    else:
+        cursor.execute("""
+            INSERT INTO students_roster (
+                student_id, register_number, name, email, department, cgpa, tenth_percentage, twelfth_percentage, skills, year
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            student_id, reg_clean, name.strip(), email_clean, department.strip().upper(),
+            cgpa, tenth, twelfth, skills.strip(), year
+        ))
+        action = "Created"
+
+    # Synchronize student auth account in authenticate table if it exists
+    try:
+        cursor.execute("SELECT uuid FROM authenticate WHERE LOWER(gmail) = ?", (email_clean,))
+        user_auth = cursor.fetchone()
+        if user_auth:
+            cursor.execute("UPDATE authenticate SET department = ? WHERE LOWER(gmail) = ?", (department.strip().upper(), email_clean))
+        else:
+            cursor.execute("""
+                INSERT INTO authenticate (uuid, gmail, password, role, department)
+                VALUES (?, ?, 'student123', 'Student', ?)
+            """, (str(uuid.uuid4()), email_clean, department.strip().upper()))
+    except Exception:
+        pass
 
     conn.commit()
     conn.close()
@@ -398,7 +504,9 @@ def upsert_student_roster_record(register_number: str, name: str, email: str, de
         "name": name.strip(),
         "email": email_clean,
         "department": department.strip().upper(),
-        "cgpa": cgpa
+        "cgpa": cgpa,
+        "year": year,
+        "action": action
     }
 
 def get_all_student_roster():
