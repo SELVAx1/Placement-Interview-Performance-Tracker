@@ -1,9 +1,53 @@
+import os
 import sqlite3
 import uuid
-import os
+from contextlib import contextmanager
+from datetime import datetime, timezone
+
+from sqlalchemy import create_engine, delete, func, inspect, select, text, update
+from sqlalchemy.orm import sessionmaker
+
+from orm_models import (
+    Base,
+    Drive,
+    Intervention,
+    InterventionAction,
+    MentorNote,
+    MentorStudent,
+    StudentDriveResult,
+    StudentRoster,
+    UploadLog,
+    User,
+)
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "database.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DB_PATH.replace(os.sep, '/')}")
+engine_options = {"pool_pre_ping": True}
+if DATABASE_URL.startswith("sqlite"):
+    engine_options["connect_args"] = {"check_same_thread": False}
+engine = create_engine(DATABASE_URL, **engine_options)
+SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
+
+def _now():
+    return datetime.now(timezone.utc).replace(tzinfo=None).isoformat(sep=" ", timespec="seconds")
+
+
+def _as_dict(entity):
+    return {column.key: getattr(entity, column.key) for column in entity.__mapper__.column_attrs}
+
+
+@contextmanager
+def session_scope():
+    session = SessionLocal()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 def get_db_connection():
@@ -11,8 +55,13 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db():
     """Initialize database and create tables if they do not exist."""
+    try:
+        Base.metadata.create_all(engine)
+    except Exception:
+        pass
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -2543,8 +2592,8 @@ def process_verdict_record(
             target_round = eval_round + 1
             norm_verdict = f"Shortlisted for Round {eval_round + 1}"
         else:
-            # Final round: student cleared final round and receives the Job Offer
-            target_round = total_rounds
+            # Final round: student cleared final round and receives Selected/Offer
+            target_round = eval_round
             norm_verdict = "Selected"
     elif any(k in v_lower for k in ["offer", "offered", "placed", "hired"]):
         target_round = total_rounds

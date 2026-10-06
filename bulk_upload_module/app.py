@@ -17,6 +17,7 @@ except ImportError:
     import parser
     import exporter
 
+
 # Initialize tables on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):

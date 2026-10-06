@@ -452,6 +452,8 @@ async def upload_drive_results(drive_id: str, file: UploadFile = File(...)):
         return JSONResponse(status_code=400, content={"success": False, "message": str(e), "detail": str(e)})
 
     drive = db.get_drive(drive_id)
+    if not drive:
+        return JSONResponse(status_code=404, content={"success": False, "message": "Drive not found.", "detail": "Drive not found."})
     base_round = drive.get("current_round", 1) if drive else 1
 
     processed_records = []
@@ -802,7 +804,7 @@ class StudentApplyRequest(BaseModel):
 
 @app.get("/api/student/profile")
 async def get_student_profile(gmail: str):
-    """viewStudentProfile() — Retrieve a student's personal & academic profile information updated by coordinator."""
+    """viewStudentProfile() â€” Retrieve a student's personal & academic profile information updated by coordinator."""
     profile = db.get_student_profile_by_email(gmail)
     if not profile:
         email_clean = gmail.strip().lower()
@@ -864,7 +866,7 @@ class StudentProfileUpdateRequest(BaseModel):
 
 @app.put("/api/student/profile")
 async def update_student_profile_endpoint(profile_data: StudentProfileUpdateRequest):
-    """updateStudentProfile() — Update student personal details, resume, and coding platforms with auto-calculated monthly sum."""
+    """updateStudentProfile() â€” Update student personal details, resume, and coding platforms with auto-calculated monthly sum."""
     if not profile_data.gmail or not profile_data.gmail.strip():
         raise HTTPException(status_code=400, detail="Student email is required.")
     
@@ -892,13 +894,13 @@ async def update_student_profile_endpoint(profile_data: StudentProfileUpdateRequ
 
 @app.get("/api/student/results")
 async def get_student_results(gmail: str):
-    """viewRoundStatus() — Retrieve all evaluation results for a student across drives."""
+    """viewRoundStatus() â€” Retrieve all evaluation results for a student across drives."""
     results = db.get_student_drive_results(gmail)
     return {"success": True, "results": results}
 
 @app.get("/api/student/applications")
 async def get_student_applications(gmail: str):
-    """viewJobApplication() — Retrieve all drives registered by student."""
+    """viewJobApplication() â€” Retrieve all drives registered by student."""
     results = db.get_student_drive_results(gmail)
     apps = []
     for r in results:
@@ -915,13 +917,13 @@ async def get_student_applications(gmail: str):
 
 @app.post("/api/student/apply")
 async def apply_student_drive(req: StudentApplyRequest):
-    """applyJobApplication() — Apply student to a placement drive."""
+    """applyJobApplication() â€” Apply student to a placement drive."""
     res = db.register_student_for_drive(req.drive_id, req.gmail)
     return {"success": True, "message": "Successfully applied for drive. You are enrolled to appear in Round 1.", "registration": res}
 
 @app.get("/api/student/analysis")
 async def get_student_analysis(gmail: str):
-    """viewAnalysis() — Performance & failure pattern analysis."""
+    """viewAnalysis() â€” Performance & failure pattern analysis."""
     results = db.get_student_drive_results(gmail)
     patterns = intervention_service.analyse_student_patterns(results)
     failed_rounds = patterns["failed_by_round"]
@@ -1263,7 +1265,7 @@ async def change_intervention_action(
 
 @app.post("/api/student/resume-upload")
 async def upload_student_resume(file: UploadFile = File(...), gmail: str = Form("student@gmail.com")):
-    """resumeUpload() — Upload and store student resume file, linking it to profile across all dashboards."""
+    """resumeUpload() â€” Upload and store student resume file, linking it to profile across all dashboards."""
     filename = file.filename.lower()
     if not (filename.endswith(".pdf") or filename.endswith(".doc") or filename.endswith(".docx")):
         return JSONResponse(status_code=400, content={"success": False, "message": "Only PDF and Word documents are allowed."})

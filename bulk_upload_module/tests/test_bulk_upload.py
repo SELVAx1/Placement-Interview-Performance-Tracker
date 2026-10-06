@@ -13,9 +13,10 @@ os.environ["BULK_UPLOAD_DB_PATH"] = TEST_DB_PATH
 import pytest
 from fastapi.testclient import TestClient
 
-from bulk_upload_module.app import app as bulk_app
+from bulk_upload_module.app import app, app as bulk_app
 from bulk_upload_module.config import TEMPLATES_DIR
-import bulk_upload_module.database as db
+from bulk_upload_module import database as db
+
 
 client = TestClient(bulk_app)
 
