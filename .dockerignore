@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.db
+.env
+.git/
+.gitignore
+.dockerignore
+docs/
+*.md
+.pytest_cache/
+test_*.py
+conftest.py

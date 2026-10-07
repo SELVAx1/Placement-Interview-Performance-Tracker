@@ -6,3 +6,5 @@ database.db
 .DS_Store
 .pytest_cache/
 public/uploads/
+venv/
+*.egg-info/
