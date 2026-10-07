@@ -9,7 +9,7 @@ import db
 from sqlalchemy import select, func, update
 from orm_models import User
 
-JWT_SECRET = os.environ.get("JWT_SECRET", "placement-tracker-jwt-secret-key-2026")
+JWT_SECRET = os.environ.get("JWT_SECRET_KEY", os.environ.get("JWT_SECRET", "placement-tracker-jwt-secret-key-2026"))
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24
 

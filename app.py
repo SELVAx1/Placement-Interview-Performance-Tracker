@@ -40,6 +40,11 @@ if os.path.exists(PUBLIC_DIR):
     app.mount("/static", StaticFiles(directory=PUBLIC_DIR), name="static")
 
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
 @app.get("/favicon.ico")
 async def serve_favicon():
     fav_path = os.path.join(PUBLIC_DIR, "favicon.ico")
