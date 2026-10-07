@@ -10,13 +10,6 @@ function LoginForm({ onLoginSuccess }) {
     const [loading, setLoading] = React.useState(false);
     const [alert, setAlert] = React.useState({ show: false, type: '', message: '' });
 
-    const handleQuickFill = (demoGmail, demoPassword) => {
-        setMode('signin');
-        setGmail(demoGmail);
-        setPassword(demoPassword);
-        setAlert({ show: false, type: '', message: '' });
-    };
-
     const resetForm = () => {
         setGmail('');
         setPassword('');
@@ -350,24 +343,6 @@ function LoginForm({ onLoginSuccess }) {
                     </p>
                 </form>
             )}
-
-            <div className="demo-section">
-                <span className="demo-title">Quick Test Accounts (Click to autofill):</span>
-                <div className="demo-chips">
-                    <button type="button" className="chip" onClick={() => handleQuickFill('coordinator@gmail.com', 'coord123')}>
-                        <span className="chip-badge coordinator">Coordinator</span> coordinator@gmail.com
-                    </button>
-                    <button type="button" className="chip" onClick={() => handleQuickFill('mentor@gmail.com', 'mentor123')}>
-                        <span className="chip-badge mentor" style={{ background: 'rgba(59,130,246,0.2)', color: '#0f766e' }}>Mentor</span> mentor@gmail.com
-                    </button>
-                    <button type="button" className="chip" onClick={() => handleQuickFill('dept.cse@gmail.com', 'dept123')}>
-                        <span className="chip-badge department" style={{ background: 'rgba(124,58,237,0.25)', color: '#d97706' }}>Department</span> dept.cse@gmail.com
-                    </button>
-                    <button type="button" className="chip" onClick={() => handleQuickFill('student@gmail.com', 'student123')}>
-                        <span className="chip-badge student">Student</span> student@gmail.com
-                    </button>
-                </div>
-            </div>
         </div>
     );
 }

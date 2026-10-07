@@ -152,7 +152,7 @@ def _migrate_columns(conn):
     ]
     sr_extra_cols = [
         "phone TEXT", "linkedin_url TEXT", "github_url TEXT", "portfolio_url TEXT",
-        "resume_filename TEXT", "resume_url TEXT",
+        "resume_filename TEXT", "resume_url TEXT", "year TEXT",
         "leetcode_handle TEXT", "leetcode_solved_month INTEGER DEFAULT 0",
         "leetcode_total_solved INTEGER DEFAULT 0",
         "codeforces_handle TEXT", "codeforces_solved_month INTEGER DEFAULT 0",
