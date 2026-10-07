@@ -55,6 +55,11 @@ def test_failure_risk_weights_drive_difficulty(monkeypatch):
         "get_drive_failure_rates",
         lambda drive_ids: {"easy-drive": 0.15, "hard-drive": 0.85},
     )
+    monkeypatch.setattr(
+        intervention_service,
+        "sample_result_classification",
+        lambda res, *args: intervention_service.classify_result(res),
+    )
 
     easy_drive_failure = intervention_service.analyse_student_patterns([
         {"drive_id": "easy-drive", "result": "Rejected", "round": 1}

@@ -10,13 +10,6 @@ function LoginForm({ onLoginSuccess, theme, onToggleTheme }) {
     const [loading, setLoading] = React.useState(false);
     const [alert, setAlert] = React.useState({ show: false, type: '', message: '' });
 
-    const handleQuickFill = (demoGmail, demoPassword) => {
-        setMode('signin');
-        setGmail(demoGmail);
-        setPassword(demoPassword);
-        setAlert({ show: false, type: '', message: '' });
-    };
-
     const resetForm = () => {
         setGmail('');
         setPassword('');

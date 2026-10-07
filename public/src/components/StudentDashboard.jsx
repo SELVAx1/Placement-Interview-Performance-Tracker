@@ -138,10 +138,19 @@ function StudentDashboard({ user, onLogout, theme, onToggleTheme }) {
 
     // Handle Job Application
     const handleApplyDrive = async (drive) => {
-        const studentCgpa = studentProfile?.cgpa || 8.4;
-        if (drive.min_cgpa && studentCgpa < drive.min_cgpa) {
-            showToast(`Application Failed: CGPA (${studentCgpa}) is below required minimum (${drive.min_cgpa})`);
-            return;
+        const hasCgpa = studentProfile?.cgpa !== null && studentProfile?.cgpa !== undefined && !isNaN(studentProfile?.cgpa);
+        const studentCgpa = hasCgpa ? Number(studentProfile.cgpa) : null;
+        const requiresCgpa = drive.min_cgpa && drive.min_cgpa > 0;
+
+        if (requiresCgpa) {
+            if (studentCgpa === null) {
+                showToast(`Application Blocked: Your CGPA is not updated in the system roster. Please contact your coordinator.`);
+                return;
+            }
+            if (studentCgpa < drive.min_cgpa) {
+                showToast(`Application Failed: Your CGPA (${studentCgpa.toFixed(2)}) is below the required minimum (${drive.min_cgpa})`);
+                return;
+            }
         }
 
         try {
@@ -449,7 +458,10 @@ function StudentDashboard({ user, onLogout, theme, onToggleTheme }) {
                                     </thead>
                                     <tbody>
                                         {allDrives.map(d => {
-                                            const isEligible = !d.min_cgpa || (studentProfile?.cgpa ? studentProfile.cgpa >= d.min_cgpa : true);
+                                            const hasCgpa = studentProfile?.cgpa !== null && studentProfile?.cgpa !== undefined && !isNaN(studentProfile?.cgpa);
+                                            const studentCgpa = hasCgpa ? Number(studentProfile.cgpa) : null;
+                                            const requiresCgpa = d.min_cgpa && d.min_cgpa > 0;
+                                            const isEligible = !requiresCgpa || (hasCgpa && studentCgpa >= d.min_cgpa);
                                             const isApplied = myApplications.some(a => a.drive_id === d.id);
 
                                             return (
@@ -477,6 +489,10 @@ function StudentDashboard({ user, onLogout, theme, onToggleTheme }) {
                                                             >
                                                                 Apply Now
                                                             </button>
+                                                        ) : !hasCgpa && requiresCgpa ? (
+                                                            <span style={{ color: '#b45309', fontSize: '0.8rem', fontWeight: '600' }} title="CGPA not updated in academic roster">
+                                                                CGPA Not Set
+                                                            </span>
                                                         ) : (
                                                             <span style={{ color: 'var(--error-text)', fontSize: '0.8rem', fontWeight: '500' }}>
                                                                 CGPA Below {d.min_cgpa}

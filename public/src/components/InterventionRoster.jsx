@@ -10,20 +10,23 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
     const [searchTerm, setSearchTerm] = React.useState('');
     const [statusFilter, setStatusFilter] = React.useState('ALL'); // 'ALL' | 'ACTIVE' | 'RESOLVED' | 'NO_PLAN'
 
-    // Add action task states
+    // Add action task states for existing interventions
     const [addingActionForIv, setAddingActionForIv] = React.useState(null);
     const [newActionTitle, setNewActionTitle] = React.useState('');
     const [newActionWeakness, setNewActionWeakness] = React.useState('');
     const [newActionResource, setNewActionResource] = React.useState('');
     const [newActionDueDate, setNewActionDueDate] = React.useState('');
 
-    // Custom intervention modal
+    // Custom intervention modal states
     const [isCustomModalOpen, setIsCustomModalOpen] = React.useState(false);
     const [customStudentGmail, setCustomStudentGmail] = React.useState('');
     const [customTitle, setCustomTitle] = React.useState('');
     const [customSummary, setCustomSummary] = React.useState('');
     const [customAnalysis, setCustomAnalysis] = React.useState('');
     const [customPriority, setCustomPriority] = React.useState('MEDIUM');
+    const [customActions, setCustomActions] = React.useState([
+        { title: 'Review core domain fundamentals with mentor', weakness_area: 'Technical Concepts', resources: 'Department LMS & Reference Docs', due_date: 'Within 7 days' }
+    ]);
     const [savingCustom, setSavingCustom] = React.useState(false);
 
     const showSuccess = (msg) => {
@@ -61,6 +64,37 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
     React.useEffect(() => {
         loadStudents(true);
     }, [loadStudents]);
+
+    const openCustomModal = (student = null) => {
+        setCustomStudentGmail(student ? student.gmail : '');
+        setCustomTitle(student ? `Targeted Remediation Plan - ${student.name || student.gmail}` : '');
+        setCustomSummary('');
+        setCustomAnalysis('');
+        setCustomPriority('MEDIUM');
+        setCustomActions([
+            { title: 'Review core domain fundamentals with mentor', weakness_area: 'Technical Concepts', resources: 'Department LMS & Reference Docs', due_date: 'Within 7 days' }
+        ]);
+        setIsCustomModalOpen(true);
+    };
+
+    const handleAddCustomActionRow = () => {
+        setCustomActions(prev => [
+            ...prev,
+            { title: '', weakness_area: '', resources: '', due_date: '' }
+        ]);
+    };
+
+    const handleRemoveCustomActionRow = (index) => {
+        setCustomActions(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleCustomActionChange = (index, field, value) => {
+        setCustomActions(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
+            return updated;
+        });
+    };
 
     const generateForStudent = async (student) => {
         setGeneratingStudentId(student.uuid || student.student_id);
@@ -109,32 +143,37 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
         }
     };
 
-    const updateStatus = async (interventionId, nextStatus) => {
-        const response = await fetch(`/api/interventions/${interventionId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
-            body: JSON.stringify({ status: nextStatus })
-        });
-        if (response.ok) {
-            await loadStudents(false);
-            showSuccess(`Intervention status updated to ${nextStatus}.`);
-        } else {
-            const data = await response.json();
-            setError(data.detail || 'Unable to update intervention status.');
+    const updateAction = async (action) => {
+        try {
+            const res = await fetch(`/api/interventions/actions/${action.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
+                body: JSON.stringify({
+                    completed: !action.completed,
+                    notes: action.notes || ''
+                })
+            });
+            if (res.ok) {
+                await loadStudents(false);
+            }
+        } catch (err) {
+            setError('Failed to update action.');
         }
     };
 
-    const updateAction = async (action) => {
-        const response = await fetch(`/api/intervention/actions/${action.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
-            body: JSON.stringify({ completed: !action.completed })
-        });
-        if (response.ok) {
-            await loadStudents(false);
-        } else {
-            const data = await response.json();
-            setError(data.detail || 'Unable to update intervention action.');
+    const updateStatus = async (interventionId, newStatus) => {
+        try {
+            const res = await fetch(`/api/interventions/${interventionId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if (res.ok) {
+                await loadStudents(false);
+                showSuccess(`Updated intervention status to ${newStatus}.`);
+            }
+        } catch (err) {
+            setError('Failed to update intervention status.');
         }
     };
 
@@ -146,27 +185,30 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                 headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
                 body: JSON.stringify({
                     title: newActionTitle.trim(),
-                    weakness_area: newActionWeakness.trim() || 'Remediation',
-                    resources: newActionResource.trim() || 'LMS & Mentor Guidance',
-                    due_date: newActionDueDate.trim() || 'Within 2 weeks'
+                    weakness_area: newActionWeakness.trim() || undefined,
+                    resources: newActionResource.trim() || undefined,
+                    due_date: newActionDueDate.trim() || undefined
                 })
             });
             if (res.ok) {
                 await loadStudents(false);
+                setAddingActionForIv(null);
                 setNewActionTitle('');
                 setNewActionWeakness('');
                 setNewActionResource('');
                 setNewActionDueDate('');
-                setAddingActionForIv(null);
-                showSuccess('Action item added to plan.');
+                showSuccess('Added new action task.');
+            } else {
+                const data = await res.json();
+                setError(data.detail || 'Failed to add action.');
             }
         } catch (err) {
-            setError('Failed to append action item.');
+            setError('Failed to add action item.');
         }
     };
 
     const handleDeleteIntervention = async (interventionId) => {
-        if (!window.confirm('Are you sure you want to remove this intervention plan?')) return;
+        if (!window.confirm('Are you sure you want to remove this intervention?')) return;
         try {
             const res = await fetch(`/api/interventions/${interventionId}`, {
                 method: 'DELETE',
@@ -174,7 +216,10 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
             });
             if (res.ok) {
                 await loadStudents(false);
-                showSuccess('Intervention plan removed.');
+                showSuccess('Intervention removed.');
+            } else {
+                const data = await res.json();
+                setError(data.detail || 'Failed to remove intervention.');
             }
         } catch (err) {
             setError('Failed to remove intervention.');
@@ -183,10 +228,22 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
 
     const handleCreateCustom = async (e) => {
         e.preventDefault();
-        if (!customStudentGmail || !customTitle.trim()) return;
+        if (!customStudentGmail.trim() || !customTitle.trim()) {
+            setError('Please enter a valid student email and title.');
+            return;
+        }
         setSavingCustom(true);
         setError('');
         try {
+            const validActions = customActions
+                .filter(act => act.title && act.title.trim())
+                .map(act => ({
+                    title: act.title.trim(),
+                    weakness_area: (act.weakness_area || '').trim() || undefined,
+                    resources: (act.resources || '').trim() || undefined,
+                    due_date: (act.due_date || '').trim() || undefined
+                }));
+
             const res = await fetch('/api/interventions/custom', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
@@ -196,9 +253,9 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                     failure_summary: customSummary.trim(),
                     ai_analysis: customAnalysis.trim(),
                     priority: customPriority,
-                    actions: [
+                    actions: validActions.length > 0 ? validActions : [
                         {
-                            title: `Review foundational concepts with mentor`,
+                            title: 'Review foundational concepts with mentor',
                             weakness_area: 'Core Fundamentals',
                             resources: 'Department Library & LMS',
                             due_date: 'Within 2 weeks'
@@ -216,7 +273,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                 setCustomStudentGmail('');
                 showSuccess('Custom intervention created successfully.');
             } else {
-                setError(data.detail || 'Failed to create intervention.');
+                setError(data.detail || 'Failed to create custom intervention.');
             }
         } catch (err) {
             setError('Failed to create custom intervention.');
@@ -239,7 +296,6 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
         if (statusFilter === 'NO_PLAN') return ivCount === 0;
         if (statusFilter === 'ACTIVE') return ivCount > 0 && s.interventions.some(i => i.status !== 'RESOLVED' && i.status !== 'COMPLETED');
         if (statusFilter === 'RESOLVED') return ivCount > 0 && s.interventions.every(i => i.status === 'RESOLVED' || i.status === 'COMPLETED');
-
         return true;
     });
 
@@ -317,7 +373,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                     <p style={{ margin: 0 }}>No students match your filter criteria.</p>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {filteredStudents.map(student => {
                         const sId = student.uuid || student.student_id;
                         const expanded = expandedStudentId === sId;
@@ -335,7 +391,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                         <span style={{ color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 'bold' }}>{expanded ? '−' : '+'}</span>
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <strong style={{ fontSize: '0.95rem' }}>{student.name || student.gmail}</strong>
+                                                <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>{student.name || student.gmail}</strong>
                                                 {student.register_number && (
                                                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--border-color)', padding: '1px 6px', borderRadius: '4px' }}>
                                                         {student.register_number}
@@ -352,6 +408,25 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                             <button
                                                 type="button"
+                                                onClick={() => openCustomModal(student)}
+                                                style={{
+                                                    padding: '7px 12px',
+                                                    borderRadius: '6px',
+                                                    background: '#ffffff',
+                                                    color: '#b45309',
+                                                    border: '1px solid #d97706',
+                                                    cursor: 'pointer',
+                                                    fontWeight: '600',
+                                                    fontSize: '0.8rem',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}
+                                            >
+                                                <span>+ Custom Plan</span>
+                                            </button>
+                                            <button
+                                                type="button"
                                                 onClick={() => generateForStudent(student)}
                                                 disabled={isGenerating}
                                                 style={{
@@ -362,7 +437,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                     border: 'none',
                                                     cursor: isGenerating ? 'wait' : 'pointer',
                                                     fontWeight: '600',
-                                                    fontSize: '0.82rem',
+                                                    fontSize: '0.8rem',
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
                                                     gap: '5px'
@@ -433,7 +508,6 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                                 </>
                                                             )}
                                                         </div>
-                                                    </div>
 
                                                     {intervention.ai_analysis && (
                                                         <p style={{ color: 'var(--primary)', fontSize: '0.84rem', margin: '8px 0', background: 'var(--primary-light)', padding: '6px 10px', borderRadius: '4px' }}>
@@ -489,21 +563,20 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                                         onClick={() => handleAppendAction(intervention.id)}
                                                                         style={{ padding: '5px 12px', borderRadius: '4px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.78rem' }}
                                                                     >
-                                                                        Save Task
+                                                                        {addingActionForIv === intervention.id ? '✕ Cancel' : '+ Add Task'}
                                                                     </button>
-                                                                </div>
+                                                                )}
                                                             </div>
-                                                        )}
 
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                                             {(intervention.actions || []).map(action => (
                                                                 <label key={action.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: action.completed ? 'var(--text-muted)' : 'var(--text-primary)', fontSize: '0.85rem', background: 'var(--panel-bg)', padding: '6px 10px', borderRadius: '5px' }}>
                                                                     <input
-                                                                        type="checkbox"
-                                                                        checked={Boolean(action.completed)}
-                                                                        disabled={!canGenerate}
-                                                                        onChange={() => canGenerate && updateAction(action)}
-                                                                        style={{ cursor: 'pointer' }}
+                                                                        type="text"
+                                                                        placeholder="Task title (e.g. Solve 20 Dynamic Programming questions)"
+                                                                        value={newActionTitle}
+                                                                        onChange={(e) => setNewActionTitle(e.target.value)}
+                                                                        style={{ padding: '8px 12px', borderRadius: '6px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
                                                                     />
                                                                     <span style={{ textDecoration: action.completed ? 'line-through' : 'none', flex: 1 }}>{action.title}</span>
                                                                     {action.weakness_area && (
@@ -513,8 +586,8 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                             ))}
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))
+                                                );
+                                            })
                                         )}
                                     </div>
                                 )}
@@ -527,17 +600,18 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
             {/* Modal: Create Custom Intervention */}
             {isCustomModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsCustomModalOpen(false)}>
-                    <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
-                        <div className="modal-head">
+                    <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px', width: '90%' }}>
+                        <div className="modal-head" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
                             <div className="head-text">
-                                <h3>Create Custom Intervention</h3>
-                                <p className="modal-sub">Create a manual targeted remediation action plan for any student.</p>
+                                <h3 style={{ color: '#0f172a', margin: 0, fontSize: '1.2rem' }}>Create Custom Intervention Plan</h3>
+                                <p className="modal-sub" style={{ color: '#64748b', margin: '4px 0 0', fontSize: '0.85rem' }}>Define a custom remediation strategy with targeted action items for any student.</p>
                             </div>
-                            <button type="button" className="close-btn" onClick={() => setIsCustomModalOpen(false)}>×</button>
+                            <button type="button" className="close-btn" onClick={() => setIsCustomModalOpen(false)} style={{ fontSize: '1.5rem', color: '#64748b', background: 'transparent', border: 'none', cursor: 'pointer' }}>×</button>
                         </div>
-                        <form onSubmit={handleCreateCustom} className="modal-form-content">
+
+                        <form onSubmit={handleCreateCustom} className="modal-form-content" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <div className="form-group">
-                                <label className="form-label">Student Gmail *</label>
+                                <label className="form-label" style={{ color: '#0f172a', fontWeight: '600', fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Student Gmail / Email *</label>
                                 <input
                                     type="email"
                                     required
@@ -546,60 +620,143 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                     value={customStudentGmail}
                                     onChange={(e) => setCustomStudentGmail(e.target.value)}
                                     list="student-emails-list"
+                                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.9rem' }}
                                 />
                                 <datalist id="student-emails-list">
-                                    {students.map(s => <option key={s.gmail} value={s.gmail}>{s.name || s.gmail}</option>)}
+                                    {students.map(s => <option key={s.gmail} value={s.gmail}>{s.name ? `${s.name} (${s.gmail})` : s.gmail}</option>)}
                                 </datalist>
                             </div>
-                            <div className="form-group">
-                                <label className="form-label">Intervention Title *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="input-text"
-                                    placeholder="e.g. Intensive DSA Sprint & Mock Interview Series"
-                                    value={customTitle}
-                                    onChange={(e) => setCustomTitle(e.target.value)}
-                                />
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+                                <div className="form-group">
+                                    <label className="form-label" style={{ color: '#0f172a', fontWeight: '600', fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Intervention Title *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="input-text"
+                                        placeholder="e.g. Intensive DSA Sprint & System Design Bootcamp"
+                                        value={customTitle}
+                                        onChange={(e) => setCustomTitle(e.target.value)}
+                                        style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.9rem' }}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label" style={{ color: '#0f172a', fontWeight: '600', fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Priority</label>
+                                    <select
+                                        className="input-text"
+                                        value={customPriority}
+                                        onChange={(e) => setCustomPriority(e.target.value)}
+                                        style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.9rem', fontWeight: '600' }}
+                                    >
+                                        <option value="HIGH">HIGH (Urgent)</option>
+                                        <option value="MEDIUM">MEDIUM (Moderate)</option>
+                                        <option value="LOW">LOW (Standard)</option>
+                                    </select>
+                                </div>
                             </div>
+
                             <div className="form-group">
-                                <label className="form-label">Priority</label>
-                                <select
-                                    className="input-text"
-                                    value={customPriority}
-                                    onChange={(e) => setCustomPriority(e.target.value)}
-                                >
-                                    <option value="HIGH">HIGH (Urgent Remediation)</option>
-                                    <option value="MEDIUM">MEDIUM (Moderate Focus)</option>
-                                    <option value="LOW">LOW (Standard Monitoring)</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Diagnostic Failure Summary</label>
+                                <label className="form-label" style={{ color: '#0f172a', fontWeight: '600', fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Diagnostic Failure Summary</label>
                                 <textarea
                                     className="input-text"
                                     rows="2"
-                                    placeholder="e.g. Struggled in Round 2 Technical interview on system architecture."
+                                    placeholder="e.g. Needs improvement in Technical Interview Round 2 on algorithms & data structures."
                                     value={customSummary}
                                     onChange={(e) => setCustomSummary(e.target.value)}
+                                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.88rem' }}
                                 />
                             </div>
+
                             <div className="form-group">
-                                <label className="form-label">Remediation Strategy / Analysis</label>
+                                <label className="form-label" style={{ color: '#0f172a', fontWeight: '600', fontSize: '0.85rem', marginBottom: '6px', display: 'block' }}>Remediation Strategy / Analysis</label>
                                 <textarea
                                     className="input-text"
                                     rows="2"
-                                    placeholder="e.g. Recommend 1:1 mentor coaching and mock interview exercises."
+                                    placeholder="e.g. Assigned 1:1 mentor coaching, mock interviews, and weekly progress reviews."
                                     value={customAnalysis}
                                     onChange={(e) => setCustomAnalysis(e.target.value)}
+                                    style={{ width: '100%', padding: '9px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.88rem' }}
                                 />
                             </div>
-                            <div className="modal-actions-bar">
-                                <button type="button" className="btn-cancel" onClick={() => setIsCustomModalOpen(false)}>
+
+                            {/* Dynamic Action Checklist builder */}
+                            <div className="form-group" style={{ background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                    <label style={{ color: '#0f172a', fontWeight: '700', fontSize: '0.85rem' }}>Targeted Action Tasks ({customActions.length})</label>
+                                    <button
+                                        type="button"
+                                        onClick={handleAddCustomActionRow}
+                                        style={{ background: '#0f766e', color: '#ffffff', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: '600' }}
+                                    >
+                                        + Add Action Task
+                                    </button>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '200px', overflowY: 'auto' }}>
+                                    {customActions.map((action, idx) => (
+                                        <div key={idx} style={{ background: '#ffffff', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                <input
+                                                    type="text"
+                                                    placeholder={`Task #${idx + 1} Title *`}
+                                                    value={action.title}
+                                                    onChange={(e) => handleCustomActionChange(idx, 'title', e.target.value)}
+                                                    style={{ flex: 1, padding: '7px 10px', borderRadius: '4px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.82rem' }}
+                                                />
+                                                {customActions.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveCustomActionRow(idx)}
+                                                        style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#ef4444', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '0.78rem' }}
+                                                    >
+                                                        🗑
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Weakness Area"
+                                                    value={action.weakness_area}
+                                                    onChange={(e) => handleCustomActionChange(idx, 'weakness_area', e.target.value)}
+                                                    style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.78rem' }}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Resource / LMS Link"
+                                                    value={action.resources}
+                                                    onChange={(e) => handleCustomActionChange(idx, 'resources', e.target.value)}
+                                                    style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.78rem' }}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Due Date"
+                                                    value={action.due_date}
+                                                    onChange={(e) => handleCustomActionChange(idx, 'due_date', e.target.value)}
+                                                    style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', color: '#0f172a', fontSize: '0.78rem' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="modal-actions-bar" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px', borderTop: '1px solid #e2e8f0', paddingTop: '14px' }}>
+                                <button
+                                    type="button"
+                                    className="btn-cancel"
+                                    onClick={() => setIsCustomModalOpen(false)}
+                                    style={{ padding: '8px 16px', borderRadius: '6px', background: '#ffffff', color: '#475569', border: '1px solid #cbd5e1', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}
+                                >
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn-confirm" disabled={savingCustom}>
-                                    {savingCustom ? 'Creating...' : 'Create Intervention'}
+                                <button
+                                    type="submit"
+                                    className="btn-confirm"
+                                    disabled={savingCustom}
+                                    style={{ padding: '8px 18px', borderRadius: '6px', background: '#b45309', color: '#ffffff', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem', boxShadow: '0 2px 6px rgba(180,83,9,0.3)' }}
+                                >
+                                    {savingCustom ? 'Creating...' : 'Create Intervention Plan'}
                                 </button>
                             </div>
                         </form>
