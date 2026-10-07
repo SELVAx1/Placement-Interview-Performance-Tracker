@@ -368,19 +368,25 @@ def _seed_demo_drive_results(session):
 
 def init_db():
     """Initialize database and create tables if they do not exist."""
-    Base.metadata.create_all(engine)
+    try:
+        Base.metadata.create_all(engine)
+    except Exception:
+        pass  # Tables may already exist from a concurrent worker
     with engine.begin() as conn:
         _migrate_columns(conn)
-    with session_scope() as session:
-        _seed_demo_users(session)
-        _seed_mentor_assignments(session)
-        _seed_demo_drives(session)
-        _seed_drive_rounds(session)
-        _seed_roster_years(session)
-        _seed_demo_roster(session)
-        _seed_coding_profiles(session)
-        _seed_demo_drive_results(session)
-        _seed_demo_interventions(session)
+    try:
+        with session_scope() as session:
+            _seed_demo_users(session)
+            _seed_mentor_assignments(session)
+            _seed_demo_drives(session)
+            _seed_drive_rounds(session)
+            _seed_roster_years(session)
+            _seed_demo_roster(session)
+            _seed_coding_profiles(session)
+            _seed_demo_drive_results(session)
+            _seed_demo_interventions(session)
+    except Exception:
+        pass  # Seeds may already exist from a concurrent worker
 
 
 # ---------------------------------------------------------------------------
