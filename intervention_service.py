@@ -35,9 +35,11 @@ def classify_result(result: str) -> str:
     return "pending"
 
 
-def sample_result_classification(result: str, sampler: random.SystemRandom) -> str:
+def sample_result_classification(result: str, sampler: Any = None) -> str:
     """Sample an interpretation of a result instead of treating labels as certain."""
     classification = classify_result(result)
+    if sampler is None:
+        return classification
     if classification == "failed":
         return sampler.choices(["failed", "pending", "passed"], weights=[0.75, 0.15, 0.10], k=1)[0]
     if classification in {"passed", "shortlisted"}:
