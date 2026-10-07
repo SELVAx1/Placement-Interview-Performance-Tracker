@@ -457,7 +457,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
                             {/* Toolbar to select quick round counts */}
                             <div className="round-count-toolbar">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ fontSize: '0.8rem', color: '#cbd5e1', fontWeight: 600 }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 600 }}>
                                         Total Rounds for this Company:
                                     </span>
                                     <span className="round-count-badge">
@@ -482,7 +482,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
 
                             {/* Round Cards */}
                             {loadingRounds ? (
-                                <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '0.84rem' }}>
+                                <div style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '0.84rem' }}>
                                     Loading existing round pipeline...
                                 </div>
                             ) : (

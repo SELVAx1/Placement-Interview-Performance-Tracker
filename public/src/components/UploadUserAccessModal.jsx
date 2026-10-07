@@ -132,14 +132,14 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                 </div>
 
                 {/* Mode Selector Tabs */}
-                <div style={{ display: 'flex', borderBottom: '1px solid #334155', margin: '12px 0 20px 0' }}>
+                <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', margin: '12px 0 20px 0' }}>
                     <button
                         type="button"
                         onClick={() => { setGrantMode('single'); setErrorMsg(''); setSuccessMsg(''); }}
                         style={{
                             flex: 1,
                             padding: '10px',
-                            background: grantMode === 'single' ? '#2563eb' : 'transparent',
+                            background: grantMode === 'single' ? '#0f766e' : 'transparent',
                             color: grantMode === 'single' ? '#ffffff' : '#94a3b8',
                             border: 'none',
                             fontWeight: '600',
@@ -155,7 +155,7 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                         style={{
                             flex: 1,
                             padding: '10px',
-                            background: grantMode === 'bulk' ? '#2563eb' : 'transparent',
+                            background: grantMode === 'bulk' ? '#0f766e' : 'transparent',
                             color: grantMode === 'bulk' ? '#ffffff' : '#94a3b8',
                             border: 'none',
                             fontWeight: '600',
@@ -174,7 +174,7 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                 )}
 
                 {successMsg && (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', color: '#34d399', padding: '12px 16px', borderRadius: '6px', marginBottom: '16px', fontSize: '0.9rem' }}>
+                    <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', color: '#059669', padding: '12px 16px', borderRadius: '6px', marginBottom: '16px', fontSize: '0.9rem' }}>
                         {successMsg}
                     </div>
                 )}
@@ -183,7 +183,7 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                 {grantMode === 'single' && (
                     <form onSubmit={handleSingleSubmit} className="modal-form">
                         <div className="input-field" style={{ marginBottom: '16px' }}>
-                            <label style={{ color: '#f8fafc', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Student Gmail Address *</label>
+                            <label style={{ color: '#0f172a', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Student Gmail Address *</label>
                             <input
                                 type="email"
                                 placeholder="student.name@gmail.com"
@@ -194,15 +194,15 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                                     width: '100%',
                                     padding: '10px 14px',
                                     borderRadius: '6px',
-                                    background: '#0f172a',
-                                    border: '1px solid #334155',
-                                    color: '#f8fafc'
+                                    background: '#ffffff',
+                                    border: '1px solid #e2e8f0',
+                                    color: '#0f172a'
                                 }}
                             />
                         </div>
 
                         <div className="input-field" style={{ marginBottom: '16px' }}>
-                            <label style={{ color: '#f8fafc', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Assignee Role *</label>
+                            <label style={{ color: '#0f172a', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Assignee Role *</label>
                             <select
                                 className="form-select"
                                 value={singleRole}
@@ -212,9 +212,9 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                                     width: '100%',
                                     padding: '10px 14px',
                                     borderRadius: '6px',
-                                    background: '#0f172a',
-                                    border: '1px solid #334155',
-                                    color: '#f8fafc'
+                                    background: '#ffffff',
+                                    border: '1px solid #e2e8f0',
+                                    color: '#0f172a'
                                 }}
                             >
                                 <option value="Student">Student</option>
@@ -226,7 +226,7 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                         </div>
 
                         <div className="input-field" style={{ marginBottom: '20px' }}>
-                            <label style={{ color: '#f8fafc', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Set Account Password *</label>
+                            <label style={{ color: '#0f172a', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Set Account Password *</label>
                             <input
                                 type="text"
                                 placeholder="Enter password (e.g. StudentPass123)"
@@ -236,12 +236,12 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                                     width: '100%',
                                     padding: '10px 14px',
                                     borderRadius: '6px',
-                                    background: '#0f172a',
-                                    border: '1px solid #334155',
-                                    color: '#f8fafc'
+                                    background: '#ffffff',
+                                    border: '1px solid #e2e8f0',
+                                    color: '#0f172a'
                                 }}
                             />
-                            <span style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>
                                 Enter a password for this user, or leave blank to assign role default (<strong>{singleRole === 'Student' ? 'student123' : singleRole === 'Mentor' ? 'mentor123' : 'user123'}</strong>).
                             </span>
                         </div>
@@ -351,7 +351,7 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                             </div>
 
                             <div className="input-field" style={{ marginBottom: '16px' }}>
-                                <label style={{ color: '#f8fafc', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Default Assignee Role *</label>
+                                <label style={{ color: '#0f172a', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Default Assignee Role *</label>
                                 <select
                                     className="form-select"
                                     value={selectedRole}
@@ -361,9 +361,9 @@ function UploadUserAccessModal({ isOpen, onClose, onAccessGranted }) {
                                         width: '100%',
                                         padding: '10px 14px',
                                         borderRadius: '6px',
-                                        background: '#0f172a',
-                                        border: '1px solid #334155',
-                                        color: '#f8fafc'
+                                        background: '#ffffff',
+                                        border: '1px solid #e2e8f0',
+                                        color: '#0f172a'
                                     }}
                                 >
                                     <option value="Student">Student</option>

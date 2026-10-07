@@ -97,11 +97,11 @@ function UploadStudentRosterModal({ isOpen, onClose, onRosterUploaded }) {
                                 <span className="lbl">Total Processed</span>
                             </div>
                             <div className="sum-stat">
-                                <span className="val" style={{ color: '#38bdf8' }}>{summaryReport.updated_count !== undefined ? summaryReport.updated_count : '-'}</span>
+                                <span className="val" style={{ color: '#0891b2' }}>{summaryReport.updated_count !== undefined ? summaryReport.updated_count : '-'}</span>
                                 <span className="lbl">Auto-Updated 🔄</span>
                             </div>
                             <div className="sum-stat">
-                                <span className="val" style={{ color: '#34d399' }}>{summaryReport.created_count !== undefined ? summaryReport.created_count : '-'}</span>
+                                <span className="val" style={{ color: '#059669' }}>{summaryReport.created_count !== undefined ? summaryReport.created_count : '-'}</span>
                                 <span className="lbl">New Profiles ✨</span>
                             </div>
                             <div className="sum-stat">
@@ -126,7 +126,7 @@ function UploadStudentRosterModal({ isOpen, onClose, onRosterUploaded }) {
                                                             borderRadius: '10px',
                                                             fontWeight: 'bold',
                                                             background: st.action === 'Updated' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(52, 211, 153, 0.15)',
-                                                            color: st.action === 'Updated' ? '#38bdf8' : '#34d399',
+                                                            color: st.action === 'Updated' ? '#0891b2' : '#059669',
                                                             border: `1px solid ${st.action === 'Updated' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(52, 211, 153, 0.3)'}`
                                                         }}>
                                                             {st.action === 'Updated' ? 'Auto-Updated' : 'New'}

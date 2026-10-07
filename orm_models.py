@@ -20,6 +20,7 @@ class User(Base):
     password: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_approved: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[str] = mapped_column(String, default=timestamp_value)
     department: Mapped[str] = mapped_column(String, default="CSE")
 

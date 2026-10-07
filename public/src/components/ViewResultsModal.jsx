@@ -213,9 +213,9 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '6px',
-                                background: 'rgba(59, 130, 246, 0.15)',
-                                color: '#93c5fd',
-                                border: '1px solid rgba(59, 130, 246, 0.35)',
+                                background: 'rgba(20, 184, 166, 0.15)',
+                                color: '#5eead4',
+                                border: '1px solid rgba(20, 184, 166, 0.35)',
                                 padding: '8px 14px',
                                 borderRadius: '8px',
                                 fontSize: '0.85rem',
@@ -439,15 +439,15 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                                     <td>{s.score !== null && s.score !== undefined ? s.score : '—'}</td>
                                                                                     <td>
                                                                                         {isRejected ? (
-                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(239,68,68,0.18)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>
+                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(239,68,68,0.18)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.3)' }}>
                                                                                                 Rejected in Round {r.round_number}
                                                                                             </span>
                                                                                         ) : isCleared ? (
-                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(16,185,129,0.18)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' }}>
+                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(16,185,129,0.18)', color: '#059669', border: '1px solid rgba(16,185,129,0.3)' }}>
                                                                                                 {isFinalStage ? 'Selected / Hired 🏆' : `Cleared Stage • In Round ${r.round_number + 1}`}
                                                                                             </span>
                                                                                         ) : (
-                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(56,189,248,0.15)', color: '#38bdf8', border: '1px solid rgba(56,189,248,0.3)' }}>
+                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(56,189,248,0.15)', color: '#0891b2', border: '1px solid rgba(56,189,248,0.3)' }}>
                                                                                                 Appearing in Round {r.round_number} (Evaluating)
                                                                                             </span>
                                                                                         )}
@@ -465,8 +465,8 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                                                     }}
                                                                                                     title="Select status for candidate: Selected (Green) or Rejected (Red)"
                                                                                                     style={{
-                                                                                                        background: '#1e293b',
-                                                                                                        color: '#93c5fd',
+                                                                                                        background: '#ffffff',
+                                                                                                        color: '#5eead4',
                                                                                                         border: '1px solid rgba(147, 197, 253, 0.4)',
                                                                                                         fontSize: '0.74rem',
                                                                                                         fontWeight: 600,
@@ -631,9 +631,9 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                     borderRadius: '6px',
                                                                     fontSize: '0.78rem',
                                                                     fontWeight: '600',
-                                                                    background: 'rgba(99, 102, 241, 0.15)',
-                                                                    color: '#818cf8',
-                                                                    border: '1px solid rgba(99, 102, 241, 0.3)'
+                                                                    background: 'rgba(180, 83, 9, 0.15)',
+                                                                    color: '#d97706',
+                                                                    border: '1px solid rgba(180, 83, 9, 0.3)'
                                                                 }}>
                                                                     Round {s.round || 1}
                                                                 </span>
@@ -723,9 +723,9 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                     borderRadius: '6px',
                                                                     fontSize: '0.78rem',
                                                                     fontWeight: '600',
-                                                                    background: 'rgba(99, 102, 241, 0.15)',
-                                                                    color: '#818cf8',
-                                                                    border: '1px solid rgba(99, 102, 241, 0.3)'
+                                                                    background: 'rgba(180, 83, 9, 0.15)',
+                                                                    color: '#d97706',
+                                                                    border: '1px solid rgba(180, 83, 9, 0.3)'
                                                                 }}>
                                                                     Round {r.round || 1}
                                                                 </span>

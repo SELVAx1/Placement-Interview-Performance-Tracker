@@ -4,6 +4,7 @@ import uuid
 from contextlib import contextmanager
 from datetime import datetime, timezone
 
+import bcrypt
 from sqlalchemy import create_engine, delete, func, select, text, update
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import sessionmaker
@@ -147,6 +148,7 @@ def _migrate_columns(conn):
         ("authenticate", "department TEXT DEFAULT 'CSE'"),
         ("authenticate", "year TEXT DEFAULT '4th Year'"),
         ("authenticate", "is_active BOOLEAN DEFAULT 1"),
+        ("authenticate", "is_approved BOOLEAN DEFAULT 1"),
     ]
     sr_extra_cols = [
         "phone TEXT", "linkedin_url TEXT", "github_url TEXT", "portfolio_url TEXT",
@@ -172,18 +174,22 @@ def _migrate_columns(conn):
             pass
 
 
+def _hash_pw(plain: str) -> str:
+    return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
 def _seed_demo_users(session):
     existing_count = session.scalar(select(func.count(User.uuid)))
     if existing_count == 0:
         for gmail, password, role in _DEMO_SEED_USERS:
-            session.add(User(uuid=str(uuid.uuid4()), gmail=gmail, password=password, role=role))
+            session.add(User(uuid=str(uuid.uuid4()), gmail=gmail, password=_hash_pw(password), role=role, is_approved=True))
         session.flush()
         print("Database seeded with sample demo accounts.")
     else:
         for gmail, password, role in _DEMO_SEED_USERS:
             exists = session.scalar(select(User.uuid).where(func.lower(User.gmail) == gmail.lower()))
             if not exists:
-                session.add(User(uuid=str(uuid.uuid4()), gmail=gmail, password=password, role=role))
+                session.add(User(uuid=str(uuid.uuid4()), gmail=gmail, password=_hash_pw(password), role=role, is_approved=True))
         session.execute(update(User).where(func.lower(User.role) == "admin").values(role="Coordinator"))
         session.execute(delete(User).where(func.lower(User.gmail) == "admin@gmail.com"))
         session.flush()
@@ -386,7 +392,7 @@ def get_user_by_gmail(gmail: str):
         user = session.scalar(select(User).where(func.lower(User.gmail) == gmail.strip().lower()))
         if user is None:
             return None
-        return {"uuid": user.uuid, "gmail": user.gmail, "password": user.password, "role": user.role, "department": user.department}
+        return {"uuid": user.uuid, "gmail": user.gmail, "password": user.password, "role": user.role, "department": user.department, "is_approved": user.is_approved}
 
 
 def get_user_by_id(user_id: str):
@@ -394,7 +400,7 @@ def get_user_by_id(user_id: str):
         user = session.scalar(select(User).where(User.uuid == user_id))
         if user is None:
             return None
-        return {"uuid": user.uuid, "gmail": user.gmail, "password": user.password, "role": user.role, "department": user.department}
+        return {"uuid": user.uuid, "gmail": user.gmail, "password": user.password, "role": user.role, "department": user.department, "is_approved": user.is_approved}
 
 
 def get_all_users():
@@ -1485,11 +1491,12 @@ def _normalize_role_value(role: str) -> str:
 
 
 def _default_password(role: str) -> str:
-    return {
+    plain = {
         "Student": "student123", "Mentor": "mentor123",
         "Department": "dept123", "Recruiter": "recruiter123",
         "Coordinator": "coord123",
     }.get(role, "user123")
+    return _hash_pw(plain)
 
 
 def bulk_grant_user_access(users_list: list):
@@ -1533,7 +1540,7 @@ def bulk_grant_user_access(users_list: list):
                 final_pwd = custom_password or _default_password(role)
                 new_uuid = str(uuid.uuid4())
                 new_user = User(
-                    uuid=new_uuid, gmail=gmail, password=final_pwd, role=role
+                    uuid=new_uuid, gmail=gmail, password=final_pwd, role=role, is_approved=True
                 )
                 session.add(new_user)
                 created_count += 1
@@ -1580,7 +1587,7 @@ def grant_single_user_access(gmail: str, role: str = "Student", password: str = 
             final_pwd = password.strip() if (password and password.strip()) else _default_password(role)
             new_uuid = str(uuid.uuid4())
             session.add(User(
-                uuid=new_uuid, gmail=gmail_clean, password=final_pwd, role=role
+                uuid=new_uuid, gmail=gmail_clean, password=final_pwd, role=role, is_approved=True
             ))
             session.flush()
             return {

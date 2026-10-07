@@ -4,12 +4,32 @@ window.interventionHeaders = (user) => ({
     'X-Department': user?.department || 'CSE'
 });
 
+window.authFetch = async (url, options = {}) => {
+    const token = localStorage.getItem('auth_token');
+    const headers = {
+        ...(options.headers || {}),
+    };
+    if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
+    }
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        window.location.reload();
+    }
+    return response;
+};
+
 function App() {
-    // Restore session from browser localStorage if present
     const [currentUser, setCurrentUser] = React.useState(() => {
         try {
             const saved = localStorage.getItem('auth_user');
-            return saved ? JSON.parse(saved) : null;
+            const token = localStorage.getItem('auth_token');
+            if (saved && token) return JSON.parse(saved);
+            localStorage.removeItem('auth_user');
+            localStorage.removeItem('auth_token');
+            return null;
         } catch (e) {
             return null;
         }
@@ -17,7 +37,14 @@ function App() {
 
     const handleLogout = () => {
         localStorage.removeItem('auth_user');
+        localStorage.removeItem('auth_token');
         setCurrentUser(null);
+    };
+
+    const handleLoginSuccess = (user, token) => {
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        localStorage.setItem('auth_token', token);
+        setCurrentUser(user);
     };
 
     return (
@@ -30,7 +57,7 @@ function App() {
                     />
                 ) : (
                     <LoginForm
-                        onLoginSuccess={(user) => setCurrentUser(user)}
+                        onLoginSuccess={handleLoginSuccess}
                     />
                 )}
             </main>

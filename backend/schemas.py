@@ -8,6 +8,15 @@ class LoginRequest(BaseModel):
     password: str = Field(..., json_schema_extra={"example": "student123"})
 
 
+class SignupRequest(BaseModel):
+    gmail: str = Field(..., json_schema_extra={"example": "newuser@gmail.com"})
+    password: str = Field(..., json_schema_extra={"example": "mypassword123"})
+    confirm_password: str = Field(..., json_schema_extra={"example": "mypassword123"})
+    role: str = Field(default="Student", json_schema_extra={"example": "Student"})
+    name: str = Field(default="", json_schema_extra={"example": "John Doe"})
+    department: str = Field(default="CSE", json_schema_extra={"example": "CSE"})
+
+
 class GrantSingleAccessRequest(BaseModel):
     gmail: str
     role: str = "Student"
