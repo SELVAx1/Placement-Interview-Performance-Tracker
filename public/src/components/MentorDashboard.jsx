@@ -1,4 +1,4 @@
-function MentorDashboard({ user, onLogout }) {
+function MentorDashboard({ user, onLogout, theme, onToggleTheme }) {
     // Tab state: 'overview', 'mentees', 'placed', 'interventions', 'metrics'
     const [activeTab, setActiveTab] = React.useState('overview');
 
@@ -265,8 +265,8 @@ function MentorDashboard({ user, onLogout }) {
                             style={{
                                 padding: '6px 12px',
                                 borderRadius: '6px',
-                                background: activeTab === tab.id ? '#0f766e' : 'transparent',
-                                color: activeTab === tab.id ? '#ffffff' : '#64748b',
+                                background: activeTab === tab.id ? 'var(--primary)' : 'transparent',
+                                color: activeTab === tab.id ? 'var(--panel-bg)' : 'var(--text-secondary)',
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontWeight: '600',
@@ -281,15 +281,22 @@ function MentorDashboard({ user, onLogout }) {
 
                 <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div className="user-profile">
-                        <div className="user-avatar" style={{ background: '#14b8a6', color: '#0f172a', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                        <div className="user-avatar" style={{ background: 'var(--primary)', color: 'var(--text-primary)', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
                             M
                         </div>
                         <div className="user-info">
                             <span className="user-name">{user?.gmail || 'mentor@gmail.com'}</span>
-                            <span className="user-role-badge" style={{ background: '#0d9488', color: '#0f172a', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', marginLeft: '6px' }}>Mentor</span>
+                            <span className="user-role-badge" style={{ background: 'var(--primary)', color: 'var(--text-primary)', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', marginLeft: '6px' }}>Mentor</span>
                         </div>
                     </div>
-                    <button type="button" className="logout-btn" onClick={onLogout} style={{ padding: '8px 14px', borderRadius: '6px', background: '#e2e8f0', color: '#0f172a', border: 'none', cursor: 'pointer' }}>
+                    {onToggleTheme && (
+                        <button type="button" className="theme-toggle" onClick={onToggleTheme} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                {theme === 'dark' ? (<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>) : (<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>)}
+                            </svg>
+                        </button>
+                    )}
+                    <button type="button" className="logout-btn" onClick={onLogout} style={{ padding: '8px 14px', borderRadius: '6px', background: 'var(--border-color)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer' }}>
                         Sign Out
                     </button>
                 </div>
@@ -297,7 +304,7 @@ function MentorDashboard({ user, onLogout }) {
 
             {/* Toast Notification */}
             {toastMessage && (
-                <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 1000, background: '#10b981', color: '#0f172a', padding: '12px 20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', fontWeight: '600' }}>
+                <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 1000, background: 'var(--success-text)', color: 'var(--text-primary)', padding: '12px 20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', fontWeight: '600' }}>
                     {toastMessage}
                 </div>
             )}
@@ -309,59 +316,59 @@ function MentorDashboard({ user, onLogout }) {
                 {activeTab === 'overview' && (
                     <div>
                         <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                            <div className="card stat-card" style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                                <span style={{ color: '#64748b', fontSize: '0.875rem' }}>Assigned Mentees</span>
-                                <h3 style={{ fontSize: '2rem', color: '#0f172a', marginTop: '8px' }}>{mentees.length}</h3>
-                                <p style={{ fontSize: '0.75rem', color: '#059669', marginTop: '4px' }}>Active tracking</p>
+                            <div className="card stat-card" style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Assigned Mentees</span>
+                                <h3 style={{ fontSize: '2rem', color: 'var(--text-primary)', marginTop: '8px' }}>{mentees.length}</h3>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--success-text)', marginTop: '4px' }}>Active tracking</p>
                             </div>
-                            <div className="card stat-card" style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                                <span style={{ color: '#64748b', fontSize: '0.875rem' }}>Placed Students</span>
-                                <h3 style={{ fontSize: '2rem', color: '#059669', marginTop: '8px' }}>{placedMentees.length}</h3>
-                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>{mentees.length > 0 ? ((placedMentees.length / mentees.length) * 100).toFixed(0) : 0}% success rate</p>
+                            <div className="card stat-card" style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Placed Students</span>
+                                <h3 style={{ fontSize: '2rem', color: 'var(--success-text)', marginTop: '8px' }}>{placedMentees.length}</h3>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{mentees.length > 0 ? ((placedMentees.length / mentees.length) * 100).toFixed(0) : 0}% success rate</p>
                             </div>
-                            <div className="card stat-card" style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                                <span style={{ color: '#64748b', fontSize: '0.875rem' }}>Active Interventions</span>
-                                <h3 style={{ fontSize: '2rem', color: '#b45309', marginTop: '8px' }}>{interventions.length}</h3>
-                                <p style={{ fontSize: '0.75rem', color: '#b45309', marginTop: '4px' }}>Requires monitoring</p>
+                            <div className="card stat-card" style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Active Interventions</span>
+                                <h3 style={{ fontSize: '2rem', color: 'var(--accent)', marginTop: '8px' }}>{interventions.length}</h3>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '4px' }}>Requires monitoring</p>
                             </div>
-                            <div className="card stat-card" style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                                <span style={{ color: '#64748b', fontSize: '0.875rem' }}>At-Risk Students</span>
-                                <h3 style={{ fontSize: '2rem', color: '#ef4444', marginTop: '8px' }}>
+                            <div className="card stat-card" style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>At-Risk Students</span>
+                                <h3 style={{ fontSize: '2rem', color: 'var(--error-text)', marginTop: '8px' }}>
                                     {mentees.filter(m => m.status === 'At Risk' || m.cgpa < 7.0).length}
                                 </h3>
-                                <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px' }}>High priority support</p>
+                                <p style={{ fontSize: '0.75rem', color: 'var(--error-text)', marginTop: '4px' }}>High priority support</p>
                             </div>
                         </div>
 
                         {/* Recent Mentees Card Grid */}
-                        <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                        <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                <h3 style={{ color: '#0f172a', fontSize: '1.25rem' }}>Mentee Roster & Quick Progress</h3>
-                                <button type="button" onClick={() => setActiveTab('mentees')} style={{ background: 'transparent', color: '#14b8a6', border: 'none', cursor: 'pointer', fontWeight: '600' }}>
+                                <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem' }}>Mentee Roster & Quick Progress</h3>
+                                <button type="button" onClick={() => setActiveTab('mentees')} style={{ background: 'transparent', color: 'var(--primary)', border: 'none', cursor: 'pointer', fontWeight: '600' }}>
                                     View All Mentees &rarr;
                                 </button>
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                                 {mentees.slice(0, 4).map(m => (
-                                    <div key={m.student_id} style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div key={m.student_id} style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                             <div>
-                                                <h4 style={{ color: '#0f172a', fontSize: '1rem', fontWeight: '600' }}>{m.name}</h4>
-                                                <p style={{ color: '#64748b', fontSize: '0.8rem' }}>{m.register_number} &bull; {m.department}</p>
+                                                <h4 style={{ color: 'var(--text-primary)', fontSize: '1rem', fontWeight: '600' }}>{m.name}</h4>
+                                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{m.register_number} &bull; {m.department}</p>
                                             </div>
                                             <span style={{
                                                 padding: '2px 8px',
                                                 borderRadius: '12px',
                                                 fontSize: '0.75rem',
                                                 fontWeight: '600',
-                                                background: m.status === 'Placed' ? 'rgba(16,185,129,0.2)' : m.status === 'At Risk' ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)',
-                                                color: m.status === 'Placed' ? '#059669' : m.status === 'At Risk' ? '#dc2626' : '#0f766e'
+                                                background: m.status === 'Placed' ? 'var(--success-bg)' : m.status === 'At Risk' ? 'var(--error-bg)' : 'var(--primary-light)',
+                                                color: m.status === 'Placed' ? 'var(--success-text)' : m.status === 'At Risk' ? 'var(--error-text)' : 'var(--primary)'
                                             }}>
                                                 {m.status}
                                             </span>
                                         </div>
-                                        <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#334155' }}>
+                                        <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                             <span>CGPA: <strong>{m.cgpa}</strong></span>
                                             <span>Placement Score: <strong>{m.placement_marks || 0}/100</strong></span>
                                         </div>
@@ -369,14 +376,14 @@ function MentorDashboard({ user, onLogout }) {
                                             <button
                                                 type="button"
                                                 onClick={() => handleOpenStudentDetail(m)}
-                                                style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', background: '#0f766e', color: '#0f172a', border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '500' }}
+                                                style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '500' }}
                                             >
                                                 Profile & Notes
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => handleViewRounds(m)}
-                                                style={{ padding: '6px 12px', borderRadius: '6px', background: '#e2e8f0', color: '#0f172a', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                style={{ padding: '6px 12px', borderRadius: '6px', background: 'var(--border-color)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
                                             >
                                                 Rounds
                                             </button>
@@ -390,11 +397,11 @@ function MentorDashboard({ user, onLogout }) {
 
                 {/* TAB 2: MY MENTEES TABLE */}
                 {activeTab === 'mentees' && (
-                    <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                    <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
                             <div>
-                                <h3 style={{ color: '#0f172a', fontSize: '1.25rem' }}>Assigned Mentee List</h3>
-                                <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Track academic standing, placement results, and add mentorship notes.</p>
+                                <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem' }}>Assigned Mentee List</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Track academic standing, placement results, and add mentorship notes.</p>
                             </div>
                             <input
                                 type="text"
@@ -404,9 +411,9 @@ function MentorDashboard({ user, onLogout }) {
                                 style={{
                                     padding: '8px 14px',
                                     borderRadius: '6px',
-                                    background: '#ffffff',
-                                    border: '1px solid #e2e8f0',
-                                    color: '#0f172a',
+                                    background: 'var(--panel-bg)',
+                                    border: '1px solid var(--border-color)',
+                                    color: 'var(--text-primary)',
                                     width: '280px'
                                 }}
                             />
@@ -415,7 +422,7 @@ function MentorDashboard({ user, onLogout }) {
                         <div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                 <thead>
-                                    <tr style={{ borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.85rem' }}>
+                                    <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                                         <th style={{ padding: '12px' }}>REGISTER NO</th>
                                         <th style={{ padding: '12px' }}>STUDENT NAME</th>
                                         <th style={{ padding: '12px' }}>DEPT</th>
@@ -428,12 +435,12 @@ function MentorDashboard({ user, onLogout }) {
                                 </thead>
                                 <tbody>
                                     {filteredMentees.map(m => (
-                                        <tr key={m.student_id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#0f172a' }}>
-                                            <td style={{ padding: '12px', fontFamily: 'monospace', color: '#94a3b8' }}>{m.register_number}</td>
+                                        <tr key={m.student_id} style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
+                                            <td style={{ padding: '12px', fontFamily: 'monospace', color: 'var(--text-muted)' }}>{m.register_number}</td>
                                             <td style={{ padding: '12px' }}>
                                                 <div style={{ fontWeight: '600' }}>{m.name}</div>
                                                 {m.resume_url && (
-                                                    <a href={m.resume_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.72rem', color: '#0f766e', textDecoration: 'none' }}>
+                                                    <a href={m.resume_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.72rem', color: 'var(--primary)', textDecoration: 'none' }}>
                                                         📄 Resume
                                                     </a>
                                                 )}
@@ -444,16 +451,16 @@ function MentorDashboard({ user, onLogout }) {
                                                 <span style={{
                                                     padding: '3px 8px',
                                                     borderRadius: '6px',
-                                                    background: 'rgba(249,115,22,0.15)',
-                                                    color: '#fdba74',
+                                                    background: 'var(--accent-light)',
+                                                    color: 'var(--warning-text)',
                                                     fontWeight: '700',
                                                     fontSize: '0.8rem',
-                                                    border: '1px solid rgba(249,115,22,0.3)',
+                                                    border: '1px solid var(--accent-subtle)',
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
                                                     gap: '4px'
                                                 }}>
-                                                    🔥 {m.monthly_total_solved || 0}
+                                                    {m.monthly_total_solved || 0}
                                                 </span>
                                             </td>
                                             <td style={{ padding: '12px' }}>{m.placement_marks || 'N/A'}</td>
@@ -463,8 +470,8 @@ function MentorDashboard({ user, onLogout }) {
                                                     borderRadius: '12px',
                                                     fontSize: '0.75rem',
                                                     fontWeight: '600',
-                                                    background: m.status === 'Placed' ? 'rgba(16,185,129,0.2)' : m.status === 'At Risk' ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)',
-                                                    color: m.status === 'Placed' ? '#059669' : m.status === 'At Risk' ? '#dc2626' : '#0f766e'
+                                                    background: m.status === 'Placed' ? 'var(--success-bg)' : m.status === 'At Risk' ? 'var(--error-bg)' : 'var(--primary-light)',
+                                                    color: m.status === 'Placed' ? 'var(--success-text)' : m.status === 'At Risk' ? 'var(--error-text)' : 'var(--primary)'
                                                 }}>
                                                     {m.status}
                                                 </span>
@@ -473,14 +480,14 @@ function MentorDashboard({ user, onLogout }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleOpenStudentDetail(m)}
-                                                    style={{ padding: '6px 12px', borderRadius: '6px', background: '#0f766e', color: '#0f172a', border: 'none', cursor: 'pointer', fontSize: '0.8rem', marginRight: '8px' }}
+                                                    style={{ padding: '6px 12px', borderRadius: '6px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontSize: '0.8rem', marginRight: '8px' }}
                                                 >
                                                     Profile & Notes
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => handleViewRounds(m)}
-                                                    style={{ padding: '6px 12px', borderRadius: '6px', background: '#e2e8f0', color: '#0f172a', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                    style={{ padding: '6px 12px', borderRadius: '6px', background: 'var(--border-color)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
                                                 >
                                                     View Rounds
                                                 </button>
@@ -495,23 +502,23 @@ function MentorDashboard({ user, onLogout }) {
 
                 {/* TAB 3: PLACED MENTEES */}
                 {activeTab === 'placed' && (
-                    <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                        <h3 style={{ color: '#0f172a', fontSize: '1.25rem', marginBottom: '8px' }}>Placed Mentees Wall of Success</h3>
-                        <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '20px' }}>Students successfully recruited by partner companies.</p>
+                    <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                        <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', marginBottom: '8px' }}>Placed Mentees Wall of Success</h3>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '20px' }}>Students successfully recruited by partner companies.</p>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
                             {placedMentees.map(m => (
-                                <div key={m.student_id} style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #10b981' }}>
+                                <div key={m.student_id} style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--success-text)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <h4 style={{ color: '#0f172a', fontSize: '1.1rem' }}>{m.name}</h4>
-                                        <span style={{ background: 'rgba(16,185,129,0.2)', color: '#059669', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>PLACED</span>
+                                        <h4 style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>{m.name}</h4>
+                                        <span style={{ background: 'var(--success-bg)', color: 'var(--success-text)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>PLACED</span>
                                     </div>
-                                    <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>{m.register_number} &bull; {m.department}</p>
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>{m.register_number} &bull; {m.department}</p>
 
-                                    <div style={{ marginTop: '16px', background: '#ffffff', padding: '12px', borderRadius: '6px' }}>
-                                        <div style={{ color: '#0f766e', fontWeight: 'bold', fontSize: '1rem' }}>{m.company || 'Tech Company'}</div>
-                                        <div style={{ color: '#334155', fontSize: '0.85rem', marginTop: '2px' }}>Role: {m.job_role || 'Software Engineer'}</div>
-                                        <div style={{ color: '#059669', fontWeight: '600', marginTop: '4px', fontSize: '0.9rem' }}>CTC: ₹{m.ctc || '12.0'} LPA</div>
+                                    <div style={{ marginTop: '16px', background: 'var(--panel-bg)', padding: '12px', borderRadius: '6px' }}>
+                                        <div style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '1rem' }}>{m.company || 'Tech Company'}</div>
+                                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '2px' }}>Role: {m.job_role || 'Software Engineer'}</div>
+                                        <div style={{ color: 'var(--success-text)', fontWeight: '600', marginTop: '4px', fontSize: '0.9rem' }}>CTC: ₹{m.ctc || '12.0'} LPA</div>
                                     </div>
                                 </div>
                             ))}
@@ -531,26 +538,26 @@ function MentorDashboard({ user, onLogout }) {
 
                 {/* TAB 5: METRICS */}
                 {activeTab === 'metrics' && (
-                    <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                        <h3 style={{ color: '#0f172a', fontSize: '1.25rem', marginBottom: '20px' }}>Mentorship Performance & Analytics</h3>
+                    <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                        <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', marginBottom: '20px' }}>Mentorship Performance & Analytics</h3>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-                            <div style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                                <h4 style={{ color: '#64748b', fontSize: '0.9rem' }}>Active Interventions Flagged</h4>
-                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#b45309', margin: '12px 0' }}>{interventions.length}</div>
-                                <p style={{ color: '#334155', fontSize: '0.8rem' }}>Mentees currently enrolled in structured intervention remediation.</p>
+                            <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                                <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Active Interventions Flagged</h4>
+                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent)', margin: '12px 0' }}>{interventions.length}</div>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Mentees currently enrolled in structured intervention remediation.</p>
                             </div>
 
-                            <div style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                                <h4 style={{ color: '#64748b', fontSize: '0.9rem' }}>Placement Conversion Rate</h4>
-                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#0f766e', margin: '12px 0' }}>{metrics?.placement_rate !== undefined ? `${metrics.placement_rate}%` : '0%'}</div>
-                                <p style={{ color: '#334155', fontSize: '0.8rem' }}>{metrics?.placed_count || placedMentees.length} placed out of {metrics?.total_mentees || mentees.length} total mentees.</p>
+                            <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                                <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Placement Conversion Rate</h4>
+                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary)', margin: '12px 0' }}>{metrics?.placement_rate !== undefined ? `${metrics.placement_rate}%` : '0%'}</div>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{metrics?.placed_count || placedMentees.length} placed out of {metrics?.total_mentees || mentees.length} total mentees.</p>
                             </div>
 
-                            <div style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                                <h4 style={{ color: '#64748b', fontSize: '0.9rem' }}>Students at Risk</h4>
-                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ef4444', margin: '12px 0' }}>{metrics?.at_risk_count || 0}</div>
-                                <p style={{ color: '#334155', fontSize: '0.8rem' }}>Students flagged needing interview practice or mentor counseling.</p>
+                            <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                                <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Students at Risk</h4>
+                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--error-text)', margin: '12px 0' }}>{metrics?.at_risk_count || 0}</div>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Students flagged needing interview practice or mentor counseling.</p>
                             </div>
                         </div>
                     </div>
@@ -560,34 +567,34 @@ function MentorDashboard({ user, onLogout }) {
             {/* MODAL / DRAWER: STUDENT DETAIL & MENTOR NOTES (FULL INTERACTIVE CRUD) */}
             {selectedStudent && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}>
-                    <div style={{ width: '100%', maxWidth: '560px', background: '#ffffff', height: '100%', padding: '24px', overflowY: 'auto', borderLeft: '1px solid #e2e8f0' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e2e8f0', pb: '16px' }}>
+                    <div style={{ width: '100%', maxWidth: '560px', background: 'var(--panel-bg)', height: '100%', padding: '24px', overflowY: 'auto', borderLeft: '1px solid var(--border-color)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', pb: '16px' }}>
                             <div>
-                                <h3 style={{ color: '#0f172a', fontSize: '1.25rem' }}>{selectedStudent.name}</h3>
-                                <p style={{ color: '#64748b', fontSize: '0.85rem' }}>{selectedStudent.register_number} &bull; {selectedStudent.department}</p>
+                                <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem' }}>{selectedStudent.name}</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{selectedStudent.register_number} &bull; {selectedStudent.department}</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setSelectedStudent(null)}
-                                style={{ background: 'transparent', color: '#94a3b8', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}
+                                style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}
                             >
                                 &times;
                             </button>
                         </div>
 
                         {/* Student Profile Overview */}
-                        <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+                        <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                <h4 style={{ color: '#0f766e', fontSize: '0.9rem', textTransform: 'uppercase', margin: 0 }}>Academic & Personal Dossier</h4>
+                                <h4 style={{ color: 'var(--primary)', fontSize: '0.9rem', textTransform: 'uppercase', margin: 0 }}>Academic & Personal Dossier</h4>
                                 {selectedStudent.resume_url && (
                                     <a
                                         href={selectedStudent.resume_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         style={{
-                                            background: 'rgba(16, 185, 129, 0.2)',
-                                            color: '#059669',
-                                            border: '1px solid rgba(16, 185, 129, 0.4)',
+                                            background: 'var(--success-bg)',
+                                            color: 'var(--success-text)',
+                                            border: '1px solid var(--success-border)',
                                             padding: '4px 10px',
                                             borderRadius: '6px',
                                             fontSize: '0.78rem',
@@ -599,40 +606,40 @@ function MentorDashboard({ user, onLogout }) {
                                     </a>
                                 )}
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85rem', color: '#334155' }}>
-                                <div>CGPA: <strong style={{ color: '#0f172a' }}>{selectedStudent.cgpa}</strong></div>
-                                <div>Placement Mark: <strong style={{ color: '#0f172a' }}>{selectedStudent.placement_marks || 0}</strong></div>
-                                <div>10th Percentage: <strong style={{ color: '#0f172a' }}>{selectedStudent.tenth}%</strong></div>
-                                <div>12th Percentage: <strong style={{ color: '#0f172a' }}>{selectedStudent.twelfth}%</strong></div>
-                                <div>Phone: <strong style={{ color: '#0f172a' }}>{selectedStudent.phone || 'N/A'}</strong></div>
-                                <div>Email: <strong style={{ color: '#0f172a' }}>{selectedStudent.email}</strong></div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                <div>CGPA: <strong style={{ color: 'var(--text-primary)' }}>{selectedStudent.cgpa}</strong></div>
+                                <div>Placement Mark: <strong style={{ color: 'var(--text-primary)' }}>{selectedStudent.placement_marks || 0}</strong></div>
+                                <div>10th Percentage: <strong style={{ color: 'var(--text-primary)' }}>{selectedStudent.tenth}%</strong></div>
+                                <div>12th Percentage: <strong style={{ color: 'var(--text-primary)' }}>{selectedStudent.twelfth}%</strong></div>
+                                <div>Phone: <strong style={{ color: 'var(--text-primary)' }}>{selectedStudent.phone || 'N/A'}</strong></div>
+                                <div>Email: <strong style={{ color: 'var(--text-primary)' }}>{selectedStudent.email}</strong></div>
                             </div>
 
                             {/* Social / Portfolio Links */}
-                            <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.8rem' }}>
+                            <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border-light)', display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.8rem' }}>
                                 {selectedStudent.linkedin_url && (
-                                    <a href={selectedStudent.linkedin_url.startsWith('http') ? selectedStudent.linkedin_url : `https://${selectedStudent.linkedin_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#0f766e', textDecoration: 'none', fontWeight: '600' }}>
-                                        🔗 LinkedIn
+                                    <a href={selectedStudent.linkedin_url.startsWith('http') ? selectedStudent.linkedin_url : `https://${selectedStudent.linkedin_url}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: '600' }}>
+                                        LinkedIn
                                     </a>
                                 )}
                                 {selectedStudent.github_url && (
-                                    <a href={selectedStudent.github_url.startsWith('http') ? selectedStudent.github_url : `https://${selectedStudent.github_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#b45309', textDecoration: 'none', fontWeight: '600' }}>
+                                    <a href={selectedStudent.github_url.startsWith('http') ? selectedStudent.github_url : `https://${selectedStudent.github_url}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>
                                         🐙 GitHub
                                     </a>
                                 )}
                                 {selectedStudent.portfolio_url && (
-                                    <a href={selectedStudent.portfolio_url.startsWith('http') ? selectedStudent.portfolio_url : `https://${selectedStudent.portfolio_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#059669', textDecoration: 'none', fontWeight: '600' }}>
-                                        🌐 Portfolio
+                                    <a href={selectedStudent.portfolio_url.startsWith('http') ? selectedStudent.portfolio_url : `https://${selectedStudent.portfolio_url}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--success-text)', textDecoration: 'none', fontWeight: '600' }}>
+                                        Portfolio
                                     </a>
                                 )}
                             </div>
                         </div>
 
                         {/* Competitive Coding Platform & Monthly Solved Activity */}
-                        <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+                        <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
                             <div style={{
-                                background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.2), rgba(249, 115, 22, 0.08))',
-                                border: '1px solid rgba(249, 115, 22, 0.4)',
+                                background: 'linear-gradient(135deg, var(--accent-subtle), var(--accent-light))',
+                                border: '1px solid var(--accent-subtle)',
                                 borderRadius: '6px',
                                 padding: '10px 14px',
                                 marginBottom: '14px',
@@ -641,12 +648,12 @@ function MentorDashboard({ user, onLogout }) {
                                 justifyContent: 'space-between'
                             }}>
                                 <div>
-                                    <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#ea580c', textTransform: 'uppercase' }}>Competitive Coding Tracker</span>
-                                    <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0f172a', marginTop: '2px' }}>
-                                        🔥 {selectedStudent.monthly_total_solved || 0} Solved This Month
+                                    <span style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--accent)', textTransform: 'uppercase' }}>Competitive Coding Tracker</span>
+                                    <div style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-primary)', marginTop: '2px' }}>
+                                        {selectedStudent.monthly_total_solved || 0} Solved This Month
                                     </div>
                                 </div>
-                                <span style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#fdba74', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: '700' }}>
+                                <span style={{ background: 'var(--accent-subtle)', color: 'var(--warning-text)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: '700' }}>
                                     All Platforms
                                 </span>
                             </div>
@@ -654,71 +661,71 @@ function MentorDashboard({ user, onLogout }) {
                             {/* 5 Coding Platform Badges */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
                                 {/* LeetCode */}
-                                <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ background: 'var(--panel-bg)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <strong style={{ color: '#d97706', fontSize: '0.78rem' }}>LeetCode</strong>
+                                        <strong style={{ color: 'var(--warning-text)', fontSize: '0.78rem' }}>LeetCode</strong>
                                         {selectedStudent.leetcode_handle && (
-                                            <a href={`https://leetcode.com/u/${selectedStudent.leetcode_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#5eead4', textDecoration: 'none' }}>↗</a>
+                                            <a href={`https://leetcode.com/u/${selectedStudent.leetcode_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: 'var(--primary)', textDecoration: 'none' }}>↗</a>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.leetcode_handle || '—'}</div>
-                                    <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: '600', marginTop: '4px' }}>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>@{selectedStudent.leetcode_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--success-text)', fontWeight: '600', marginTop: '4px' }}>
                                         {selectedStudent.leetcode_solved_month || 0} this mo
                                     </div>
                                 </div>
 
                                 {/* Codeforces */}
-                                <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ background: 'var(--panel-bg)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <strong style={{ color: '#0f766e', fontSize: '0.78rem' }}>Codeforces</strong>
+                                        <strong style={{ color: 'var(--primary)', fontSize: '0.78rem' }}>Codeforces</strong>
                                         {selectedStudent.codeforces_handle && (
-                                            <a href={`https://codeforces.com/profile/${selectedStudent.codeforces_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#5eead4', textDecoration: 'none' }}>↗</a>
+                                            <a href={`https://codeforces.com/profile/${selectedStudent.codeforces_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: 'var(--primary)', textDecoration: 'none' }}>↗</a>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.codeforces_handle || '—'}</div>
-                                    <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: '600', marginTop: '4px' }}>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>@{selectedStudent.codeforces_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--success-text)', fontWeight: '600', marginTop: '4px' }}>
                                         {selectedStudent.codeforces_solved_month || 0} this mo
                                     </div>
                                 </div>
 
                                 {/* CodeChef */}
-                                <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ background: 'var(--panel-bg)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <strong style={{ color: '#d97706', fontSize: '0.78rem' }}>CodeChef</strong>
+                                        <strong style={{ color: 'var(--warning-text)', fontSize: '0.78rem' }}>CodeChef</strong>
                                         {selectedStudent.codechef_handle && (
-                                            <a href={`https://www.codechef.com/users/${selectedStudent.codechef_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#5eead4', textDecoration: 'none' }}>↗</a>
+                                            <a href={`https://www.codechef.com/users/${selectedStudent.codechef_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: 'var(--primary)', textDecoration: 'none' }}>↗</a>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.codechef_handle || '—'}</div>
-                                    <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: '600', marginTop: '4px' }}>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>@{selectedStudent.codechef_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--success-text)', fontWeight: '600', marginTop: '4px' }}>
                                         {selectedStudent.codechef_solved_month || 0} this mo
                                     </div>
                                 </div>
 
                                 {/* HackerRank */}
-                                <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ background: 'var(--panel-bg)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <strong style={{ color: '#10b981', fontSize: '0.78rem' }}>HackerRank</strong>
+                                        <strong style={{ color: 'var(--success-text)', fontSize: '0.78rem' }}>HackerRank</strong>
                                         {selectedStudent.hackerrank_handle && (
-                                            <a href={`https://www.hackerrank.com/profile/${selectedStudent.hackerrank_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#5eead4', textDecoration: 'none' }}>↗</a>
+                                            <a href={`https://www.hackerrank.com/profile/${selectedStudent.hackerrank_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: 'var(--primary)', textDecoration: 'none' }}>↗</a>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.hackerrank_handle || '—'}</div>
-                                    <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: '600', marginTop: '4px' }}>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>@{selectedStudent.hackerrank_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--success-text)', fontWeight: '600', marginTop: '4px' }}>
                                         {selectedStudent.hackerrank_solved_month || 0} this mo
                                     </div>
                                 </div>
 
                                 {/* AtCoder */}
-                                <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                <div style={{ background: 'var(--panel-bg)', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <strong style={{ color: '#d97706', fontSize: '0.78rem' }}>AtCoder</strong>
+                                        <strong style={{ color: 'var(--warning-text)', fontSize: '0.78rem' }}>AtCoder</strong>
                                         {selectedStudent.atcoder_handle && (
-                                            <a href={`https://atcoder.jp/users/${selectedStudent.atcoder_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#5eead4', textDecoration: 'none' }}>↗</a>
+                                            <a href={`https://atcoder.jp/users/${selectedStudent.atcoder_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: 'var(--primary)', textDecoration: 'none' }}>↗</a>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.atcoder_handle || '—'}</div>
-                                    <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: '600', marginTop: '4px' }}>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>@{selectedStudent.atcoder_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--success-text)', fontWeight: '600', marginTop: '4px' }}>
                                         {selectedStudent.atcoder_solved_month || 0} this mo
                                     </div>
                                 </div>
@@ -727,7 +734,7 @@ function MentorDashboard({ user, onLogout }) {
 
                         {/* Mentor Notes Interactive CRUD Section */}
                         <div style={{ marginTop: '24px' }}>
-                            <h4 style={{ color: '#0f172a', fontSize: '1.1rem', marginBottom: '12px' }}>Mentor Counseling Notes</h4>
+                            <h4 style={{ color: 'var(--text-primary)', fontSize: '1.1rem', marginBottom: '12px' }}>Mentor Counseling Notes</h4>
 
                             {/* Add Note Form */}
                             <form onSubmit={handleAddNote} style={{ marginBottom: '20px' }}>
@@ -740,9 +747,9 @@ function MentorDashboard({ user, onLogout }) {
                                         width: '100%',
                                         padding: '12px',
                                         borderRadius: '6px',
-                                        background: '#ffffff',
-                                        border: '1px solid #e2e8f0',
-                                        color: '#0f172a',
+                                        background: 'var(--panel-bg)',
+                                        border: '1px solid var(--border-color)',
+                                        color: 'var(--text-primary)',
                                         resize: 'vertical',
                                         marginBottom: '8px'
                                     }}
@@ -752,8 +759,8 @@ function MentorDashboard({ user, onLogout }) {
                                     style={{
                                         padding: '8px 16px',
                                         borderRadius: '6px',
-                                        background: '#0f766e',
-                                        color: '#0f172a',
+                                        background: 'var(--primary)',
+                                        color: 'var(--text-primary)',
                                         border: 'none',
                                         cursor: 'pointer',
                                         fontWeight: '600',
@@ -766,34 +773,34 @@ function MentorDashboard({ user, onLogout }) {
 
                             {/* Notes List */}
                             {notesLoading ? (
-                                <p style={{ color: '#94a3b8' }}>Loading notes...</p>
+                                <p style={{ color: 'var(--text-muted)' }}>Loading notes...</p>
                             ) : studentNotes.length === 0 ? (
-                                <p style={{ color: '#64748b', fontSize: '0.9rem' }}>No mentorship notes recorded yet for this student.</p>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No mentorship notes recorded yet for this student.</p>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     {studentNotes.map(n => (
-                                        <div key={n.note_id} style={{ background: '#ffffff', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                        <div key={n.note_id} style={{ background: 'var(--panel-bg)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                             {editingNoteId === n.note_id ? (
                                                 <div>
                                                     <textarea
                                                         rows="3"
                                                         value={editNoteContent}
                                                         onChange={(e) => setEditNoteContent(e.target.value)}
-                                                        style={{ width: '100%', padding: '8px', background: '#ffffff', color: '#0f172a', border: '1px solid #14b8a6', borderRadius: '4px', marginBottom: '8px' }}
+                                                        style={{ width: '100%', padding: '8px', background: 'var(--panel-bg)', color: 'var(--text-primary)', border: '1px solid var(--primary)', borderRadius: '4px', marginBottom: '8px' }}
                                                     />
                                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                                        <button type="button" onClick={() => handleSaveEditNote(n.note_id)} style={{ background: '#10b981', color: '#0f172a', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Save</button>
-                                                        <button type="button" onClick={() => setEditingNoteId(null)} style={{ background: '#64748b', color: '#0f172a', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Cancel</button>
+                                                        <button type="button" onClick={() => handleSaveEditNote(n.note_id)} style={{ background: 'var(--success-text)', color: 'var(--text-primary)', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Save</button>
+                                                        <button type="button" onClick={() => setEditingNoteId(null)} style={{ background: 'var(--text-secondary)', color: 'var(--text-primary)', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>Cancel</button>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 <div>
-                                                    <p style={{ color: '#0f172a', fontSize: '0.9rem', whitespace: 'pre-wrap' }}>{n.content}</p>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                                                    <p style={{ color: 'var(--text-primary)', fontSize: '0.9rem', whitespace: 'pre-wrap' }}>{n.content}</p>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                                         <span>{n.created_at}</span>
                                                         <div style={{ display: 'flex', gap: '8px' }}>
-                                                            <button type="button" onClick={() => handleStartEditNote(n)} style={{ background: 'transparent', color: '#0f766e', border: 'none', cursor: 'pointer' }}>Edit</button>
-                                                            <button type="button" onClick={() => handleDeleteNote(n.note_id)} style={{ background: 'transparent', color: '#dc2626', border: 'none', cursor: 'pointer' }}>Delete</button>
+                                                            <button type="button" onClick={() => handleStartEditNote(n)} style={{ background: 'transparent', color: 'var(--primary)', border: 'none', cursor: 'pointer' }}>Edit</button>
+                                                            <button type="button" onClick={() => handleDeleteNote(n.note_id)} style={{ background: 'transparent', color: 'var(--error-text)', border: 'none', cursor: 'pointer' }}>Delete</button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -810,22 +817,22 @@ function MentorDashboard({ user, onLogout }) {
             {/* MODAL: VIEW ROUNDS HISTORY */}
             {viewRoundsStudent && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-                    <div style={{ width: '100%', maxWidth: '600px', background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ width: '100%', maxWidth: '600px', background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                            <h3 style={{ color: '#0f172a', fontSize: '1.2rem' }}>Round Results: {viewRoundsStudent.name}</h3>
-                            <button type="button" onClick={() => setViewRoundsStudent(null)} style={{ background: 'transparent', color: '#94a3b8', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
+                            <h3 style={{ color: 'var(--text-primary)', fontSize: '1.2rem' }}>Round Results: {viewRoundsStudent.name}</h3>
+                            <button type="button" onClick={() => setViewRoundsStudent(null)} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
                         </div>
                         {roundsHistory.length === 0 ? (
-                            <p style={{ color: '#94a3b8' }}>No recruitment round history recorded for this student.</p>
+                            <p style={{ color: 'var(--text-muted)' }}>No recruitment round history recorded for this student.</p>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {roundsHistory.map((r, idx) => (
-                                    <div key={idx} style={{ background: '#ffffff', padding: '12px 16px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div key={idx} style={{ background: 'var(--panel-bg)', padding: '12px 16px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div>
-                                            <div style={{ color: '#0f172a', fontWeight: 'bold' }}>{r.company_name}</div>
-                                            <div style={{ color: '#64748b', fontSize: '0.8rem' }}>Role: {r.job_role || 'SDE'} &bull; Round {r.round}</div>
+                                            <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>{r.company_name}</div>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Role: {r.job_role || 'SDE'} &bull; Round {r.round}</div>
                                         </div>
-                                        <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', background: 'rgba(59,130,246,0.2)', color: '#0f766e' }}>
+                                        <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold', background: 'var(--primary-subtle)', color: 'var(--primary)' }}>
                                             {r.result}
                                         </span>
                                     </div>

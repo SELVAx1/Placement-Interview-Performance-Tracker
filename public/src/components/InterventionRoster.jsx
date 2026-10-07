@@ -244,23 +244,23 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
     });
 
     return (
-        <div className="card" style={{ background: '#111827', padding: '24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
             {/* Header & Controls */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
                 <div>
-                    <h3 style={{ color: '#0f172a', fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span>{title}</span>
-                        <span style={{ fontSize: '0.75rem', background: 'rgba(59,130,246,0.2)', color: '#0f766e', padding: '2px 8px', borderRadius: '12px', fontWeight: '600' }}>
+                        <span style={{ fontSize: '0.75rem', background: 'var(--primary-subtle)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '12px', fontWeight: '600' }}>
                             {students.length} Total Students
                         </span>
                     </h3>
-                    <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '6px 0 0' }}>{description}</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '6px 0 0' }}>{description}</p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                     <button
                         type="button"
                         onClick={() => loadStudents(false)}
-                        style={{ padding: '8px 14px', borderRadius: '7px', background: '#1f2937', color: '#0f172a', border: '1px solid #374151', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '500' }}
+                        style={{ padding: '8px 14px', borderRadius: '7px', background: 'var(--panel-hover)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: '500' }}
                     >
                         {refreshing ? 'Refreshing...' : '↻ Refresh'}
                     </button>
@@ -269,7 +269,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                             <button
                                 type="button"
                                 onClick={() => setIsCustomModalOpen(true)}
-                                style={{ padding: '8px 14px', borderRadius: '7px', background: '#374151', color: '#0f172a', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.82rem' }}
+                                style={{ padding: '8px 14px', borderRadius: '7px', background: 'var(--accent-subtle)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.82rem' }}
                             >
                                 + Custom Intervention
                             </button>
@@ -277,9 +277,9 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                 type="button"
                                 onClick={generateForAll}
                                 disabled={generatingAll || loading || students.length === 0}
-                                style={{ padding: '8px 16px', borderRadius: '7px', background: 'linear-gradient(135deg, #0f766e, #0d9488)', color: '#0f172a', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.82rem', boxShadow: '0 4px 12px rgba(37,99,235,0.3)' }}
+                                style={{ padding: '8px 16px', borderRadius: '7px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.82rem', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
                             >
-                                {generatingAll ? 'Synthesizing All AI Plans...' : '⚡ Generate All AI Plans'}
+                                {generatingAll ? 'Synthesizing All AI Plans...' : 'Generate All AI Plans'}
                             </button>
                         </>
                     )}
@@ -293,12 +293,12 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                     placeholder="Search by student name, email, department, or reg no..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{ flex: 1, minWidth: '260px', padding: '8px 14px', borderRadius: '7px', background: '#1f2937', color: '#0f172a', border: '1px solid #374151', fontSize: '0.85rem' }}
+                    style={{ flex: 1, minWidth: '260px', padding: '8px 14px', borderRadius: '7px', background: 'var(--panel-hover)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
                 />
                 <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    style={{ padding: '8px 12px', borderRadius: '7px', background: '#1f2937', color: '#0f172a', border: '1px solid #374151', fontSize: '0.85rem' }}
+                    style={{ padding: '8px 12px', borderRadius: '7px', background: 'var(--panel-hover)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
                 >
                     <option value="ALL">All Cohort ({students.length})</option>
                     <option value="ACTIVE">Active Interventions</option>
@@ -307,13 +307,13 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                 </select>
             </div>
 
-            {error && <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', padding: '10px 14px', borderRadius: '7px', marginBottom: '14px', fontSize: '0.85rem' }}>{error}</div>}
-            {successMsg && <div style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#059669', padding: '10px 14px', borderRadius: '7px', marginBottom: '14px', fontSize: '0.85rem' }}>{successMsg}</div>}
+            {error && <div style={{ background: 'var(--error-bg)', border: '1px solid var(--error-border)', color: 'var(--error-text)', padding: '10px 14px', borderRadius: '7px', marginBottom: '14px', fontSize: '0.85rem' }}>{error}</div>}
+            {successMsg && <div style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)', color: 'var(--success-text)', padding: '10px 14px', borderRadius: '7px', marginBottom: '14px', fontSize: '0.85rem' }}>{successMsg}</div>}
 
             {loading ? (
-                <p style={{ color: '#94a3b8', textAlign: 'center', padding: '40px' }}>Loading authorized student cohort...</p>
+                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>Loading authorized student cohort...</p>
             ) : filteredStudents.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                     <p style={{ margin: 0 }}>No students match your filter criteria.</p>
                 </div>
             ) : (
@@ -325,24 +325,24 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                         const isGenerating = generatingStudentId === sId;
 
                         return (
-                            <div key={sId || student.gmail} style={{ background: '#ffffff', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', overflow: 'hidden' }}>
+                            <div key={sId || student.gmail} style={{ background: 'var(--panel-bg)', border: '1px solid var(--border-color)', borderRadius: '10px', overflow: 'hidden' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '14px 18px', flexWrap: 'wrap' }}>
                                     <button
                                         type="button"
                                         onClick={() => setExpandedStudentId(expanded ? null : sId)}
-                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '240px', textAlign: 'left', background: 'transparent', color: '#0f172a', border: 'none', cursor: 'pointer' }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '240px', textAlign: 'left', background: 'transparent', color: 'var(--text-primary)', border: 'none', cursor: 'pointer' }}
                                     >
-                                        <span style={{ color: '#0f766e', fontSize: '1.2rem', fontWeight: 'bold' }}>{expanded ? '−' : '+'}</span>
+                                        <span style={{ color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 'bold' }}>{expanded ? '−' : '+'}</span>
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <strong style={{ fontSize: '0.95rem' }}>{student.name || student.gmail}</strong>
                                                 {student.register_number && (
-                                                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '1px 6px', borderRadius: '4px' }}>
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--border-color)', padding: '1px 6px', borderRadius: '4px' }}>
                                                         {student.register_number}
                                                     </span>
                                                 )}
                                             </div>
-                                            <small style={{ color: '#64748b', fontSize: '0.8rem' }}>
+                                            <small style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                                                 {student.gmail} · {student.department || 'CSE'} {student.year ? `· ${student.year}` : ''} · {ivs.length} intervention plan(s)
                                             </small>
                                         </div>
@@ -357,8 +357,8 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                 style={{
                                                     padding: '7px 14px',
                                                     borderRadius: '6px',
-                                                    background: isGenerating ? '#e2e8f0' : '#0f766e',
-                                                    color: '#0f172a',
+                                                    background: isGenerating ? 'var(--border-color)' : 'var(--primary)',
+                                                    color: isGenerating ? 'var(--text-muted)' : 'var(--panel-bg)',
                                                     border: 'none',
                                                     cursor: isGenerating ? 'wait' : 'pointer',
                                                     fontWeight: '600',
@@ -368,7 +368,6 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                     gap: '5px'
                                                 }}
                                             >
-                                                <span>⚡</span>
                                                 <span>{isGenerating ? 'Synthesizing...' : '+ Trigger AI Plan'}</span>
                                             </button>
                                         </div>
@@ -376,16 +375,16 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                 </div>
 
                                 {expanded && (
-                                    <div style={{ borderTop: '1px solid #e2e8f0', padding: '18px', background: '#ffffff' }}>
+                                    <div style={{ borderTop: '1px solid var(--border-color)', padding: '18px', background: 'var(--panel-bg)' }}>
                                         {ivs.length === 0 ? (
-                                            <div style={{ textAlign: 'center', padding: '20px', color: '#94a3b8' }}>
+                                            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
                                                 <p style={{ margin: '0 0 10px' }}>No intervention generated for this student yet.</p>
                                                 {canGenerate && (
                                                     <button
                                                         type="button"
                                                         onClick={() => generateForStudent(student)}
                                                         disabled={isGenerating}
-                                                        style={{ padding: '6px 14px', borderRadius: '6px', background: '#0f766e', color: '#0f172a', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
+                                                        style={{ padding: '6px 14px', borderRadius: '6px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}
                                                     >
                                                         Generate First AI Plan
                                                     </button>
@@ -393,17 +392,17 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                             </div>
                                         ) : (
                                             ivs.map(intervention => (
-                                                <div key={intervention.id} style={{ background: '#ffffff', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', marginBottom: '14px' }}>
+                                                <div key={intervention.id} style={{ background: 'var(--panel-bg)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '8px', marginBottom: '14px' }}>
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
                                                         <div>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{intervention.title}</strong>
-                                                                <span style={{ fontSize: '0.72rem', background: intervention.priority === 'HIGH' ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)', color: intervention.priority === 'HIGH' ? '#f87171' : '#5eead4', padding: '2px 6px', borderRadius: '4px', fontWeight: '600' }}>
+                                                                <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{intervention.title}</strong>
+                                                                <span style={{ fontSize: '0.72rem', background: intervention.priority === 'HIGH' ? 'var(--error-bg)' : 'var(--primary-subtle)', color: intervention.priority === 'HIGH' ? 'var(--error-text)' : 'var(--primary)', padding: '2px 6px', borderRadius: '4px', fontWeight: '600' }}>
                                                                     Priority: {intervention.priority}
                                                                 </span>
                                                             </div>
                                                             {intervention.failure_summary && (
-                                                                <p style={{ color: '#f87171', fontSize: '0.84rem', margin: '6px 0 0', background: 'rgba(239,68,68,0.08)', padding: '6px 10px', borderRadius: '4px' }}>
+                                                                <p style={{ color: 'var(--error-text)', fontSize: '0.84rem', margin: '6px 0 0', background: 'var(--error-bg)', padding: '6px 10px', borderRadius: '4px' }}>
                                                                     <strong>Diagnostic:</strong> {intervention.failure_summary}
                                                                 </p>
                                                             )}
@@ -415,7 +414,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                                     <select
                                                                         value={intervention.status}
                                                                         onChange={(e) => updateStatus(intervention.id, e.target.value)}
-                                                                        style={{ height: '32px', background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '5px', fontSize: '0.8rem', padding: '0 8px' }}
+                                                                        style={{ height: '32px', background: 'var(--panel-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '5px', fontSize: '0.8rem', padding: '0 8px' }}
                                                                     >
                                                                         <option value="OPEN">OPEN</option>
                                                                         <option value="IN_PROGRESS">IN PROGRESS</option>
@@ -427,9 +426,9 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                                         type="button"
                                                                         onClick={() => handleDeleteIntervention(intervention.id)}
                                                                         title="Delete intervention"
-                                                                        style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.9rem', padding: '4px' }}
+                                                                        style={{ background: 'transparent', border: 'none', color: 'var(--error-text)', cursor: 'pointer', fontSize: '0.9rem', padding: '4px' }}
                                                                     >
-                                                                        🗑
+                                                                        
                                                                     </button>
                                                                 </>
                                                             )}
@@ -437,7 +436,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                     </div>
 
                                                     {intervention.ai_analysis && (
-                                                        <p style={{ color: '#5eead4', fontSize: '0.84rem', margin: '8px 0', background: 'rgba(59,130,246,0.08)', padding: '6px 10px', borderRadius: '4px' }}>
+                                                        <p style={{ color: 'var(--primary)', fontSize: '0.84rem', margin: '8px 0', background: 'var(--primary-light)', padding: '6px 10px', borderRadius: '4px' }}>
                                                             <strong>AI Recommendation:</strong> {intervention.ai_analysis}
                                                         </p>
                                                     )}
@@ -445,28 +444,28 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                     {/* Checklist */}
                                                     <div style={{ marginTop: '12px' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                                            <small style={{ color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                            <small style={{ color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                                                 Action Checklist ({((intervention.actions || []).filter(a => a.completed)).length}/{(intervention.actions || []).length} Done)
                                                             </small>
                                                             {canGenerate && (
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setAddingActionForIv(addingActionForIv === intervention.id ? null : intervention.id)}
-                                                                    style={{ background: 'transparent', color: '#0f766e', border: 'none', cursor: 'pointer', fontSize: '0.78rem', fontWeight: '600' }}
+                                                                    style={{ background: 'transparent', color: 'var(--primary)', border: 'none', cursor: 'pointer', fontSize: '0.78rem', fontWeight: '600' }}
                                                                 >
-                                                                    {addingActionForIv === intervention.id ? '✕ Cancel' : '+ Add Task'}
+                                                                    {addingActionForIv === intervention.id ? 'Cancel' : '+ Add Task'}
                                                                 </button>
                                                             )}
                                                         </div>
 
                                                         {addingActionForIv === intervention.id && (
-                                                            <div style={{ background: '#ffffff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                            <div style={{ background: 'var(--panel-bg)', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                                 <input
                                                                     type="text"
                                                                     placeholder="Task title (e.g. Solve 20 Dynamic Programming questions)"
                                                                     value={newActionTitle}
                                                                     onChange={(e) => setNewActionTitle(e.target.value)}
-                                                                    style={{ padding: '6px 10px', borderRadius: '4px', background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}
+                                                                    style={{ padding: '6px 10px', borderRadius: '4px', background: 'var(--panel-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}
                                                                 />
                                                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                                                     <input
@@ -474,21 +473,21 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                                         placeholder="Weakness area"
                                                                         value={newActionWeakness}
                                                                         onChange={(e) => setNewActionWeakness(e.target.value)}
-                                                                        style={{ padding: '6px 10px', borderRadius: '4px', background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}
+                                                                        style={{ padding: '6px 10px', borderRadius: '4px', background: 'var(--panel-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}
                                                                     />
                                                                     <input
                                                                         type="text"
                                                                         placeholder="Resource"
                                                                         value={newActionResource}
                                                                         onChange={(e) => setNewActionResource(e.target.value)}
-                                                                        style={{ padding: '6px 10px', borderRadius: '4px', background: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', fontSize: '0.8rem' }}
+                                                                        style={{ padding: '6px 10px', borderRadius: '4px', background: 'var(--panel-bg)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}
                                                                     />
                                                                 </div>
                                                                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => handleAppendAction(intervention.id)}
-                                                                        style={{ padding: '5px 12px', borderRadius: '4px', background: '#0f766e', color: '#0f172a', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.78rem' }}
+                                                                        style={{ padding: '5px 12px', borderRadius: '4px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.78rem' }}
                                                                     >
                                                                         Save Task
                                                                     </button>
@@ -498,7 +497,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
 
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                                             {(intervention.actions || []).map(action => (
-                                                                <label key={action.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: action.completed ? '#94a3b8' : '#0f172a', fontSize: '0.85rem', background: '#ffffff', padding: '6px 10px', borderRadius: '5px' }}>
+                                                                <label key={action.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: action.completed ? 'var(--text-muted)' : 'var(--text-primary)', fontSize: '0.85rem', background: 'var(--panel-bg)', padding: '6px 10px', borderRadius: '5px' }}>
                                                                     <input
                                                                         type="checkbox"
                                                                         checked={Boolean(action.completed)}
@@ -508,7 +507,7 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                                     />
                                                                     <span style={{ textDecoration: action.completed ? 'line-through' : 'none', flex: 1 }}>{action.title}</span>
                                                                     {action.weakness_area && (
-                                                                        <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>[{action.weakness_area}]</span>
+                                                                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>[{action.weakness_area}]</span>
                                                                     )}
                                                                 </label>
                                                             ))}

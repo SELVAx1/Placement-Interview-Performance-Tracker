@@ -1,11 +1,10 @@
-function CoordinatorDashboard({ user, onLogout }) {
-    // Strict Access Control Guard: Students cannot view Coordinator Workspace or User Access tools
+function CoordinatorDashboard({ user, onLogout, theme, onToggleTheme }) {
     if (user && user.role && user.role.toLowerCase() === 'student') {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#ffffff', color: '#0f172a', padding: '24px' }}>
-                <h2 style={{ fontSize: '1.5rem', color: '#ef4444', marginBottom: '8px' }}>Access Restricted</h2>
-                <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Student accounts are not authorized to access Coordinator management tools.</p>
-                <button type="button" onClick={onLogout} style={{ padding: '10px 20px', borderRadius: '8px', background: '#14b8a6', color: '#0f172a', border: 'none', cursor: 'pointer', fontWeight: '600' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-main)', color: 'var(--text-primary)', padding: '24px' }}>
+                <h2 style={{ fontSize: '1.5rem', color: 'var(--error-text)', marginBottom: '8px' }}>Access Restricted</h2>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>Student accounts are not authorized to access Coordinator management tools.</p>
+                <button type="button" onClick={onLogout} style={{ padding: '10px 20px', borderRadius: '8px', background: 'var(--primary)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '600' }}>
                     Sign Out
                 </button>
             </div>
@@ -333,6 +332,18 @@ function CoordinatorDashboard({ user, onLogout }) {
                         <span className="badge-pill coordinator-pill">Coordinator</span>
                     </div>
 
+                    {onToggleTheme && (
+                        <button type="button" className="theme-toggle" onClick={onToggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                {theme === 'dark' ? (
+                                    <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>
+                                ) : (
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                )}
+                            </svg>
+                        </button>
+                    )}
+
                     <button type="button" className="btn-nav-signout" onClick={onLogout} title="Sign Out">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -379,10 +390,10 @@ function CoordinatorDashboard({ user, onLogout }) {
                     <div style={{ padding: '0' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                             <div>
-                                <h2 style={{ color: '#0f172a', fontSize: '1.3rem', fontWeight: '700', margin: 0 }}>Pending Signup Approvals</h2>
-                                <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>Review and approve or reject new user registration requests.</p>
+                                <h2 style={{ color: 'var(--text-primary)', fontSize: '1.3rem', fontWeight: '700', margin: 0 }}>Pending Signup Approvals</h2>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>Review and approve or reject new user registration requests.</p>
                             </div>
-                            <button type="button" onClick={fetchPendingSignups} style={{ padding: '8px 16px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', color: '#0f766e', border: '1px solid rgba(59,130,246,0.3)', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}>
+                            <button type="button" onClick={fetchPendingSignups} style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary-subtle)', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}>
                                 Refresh
                             </button>
                         </div>
@@ -412,21 +423,21 @@ function CoordinatorDashboard({ user, onLogout }) {
                                                 <td className="font-semibold">{signup.gmail}</td>
                                                 <td>
                                                     <span style={{
-                                                        background: signup.role === 'Student' ? 'rgba(16,185,129,0.15)' : signup.role === 'Mentor' ? 'rgba(59,130,246,0.15)' : 'rgba(124,58,237,0.15)',
-                                                        color: signup.role === 'Student' ? '#059669' : signup.role === 'Mentor' ? '#0f766e' : '#d97706',
+                                                        background: signup.role === 'Student' ? 'var(--success-bg)' : signup.role === 'Mentor' ? 'var(--primary-light)' : 'var(--accent-light)',
+                                                        color: signup.role === 'Student' ? 'var(--success-text)' : signup.role === 'Mentor' ? 'var(--primary)' : 'var(--warning-text)',
                                                         padding: '3px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '600'
                                                     }}>
                                                         {signup.role}
                                                     </span>
                                                 </td>
                                                 <td>{signup.department || 'CSE'}</td>
-                                                <td style={{ color: '#64748b', fontSize: '0.85rem' }}>{signup.created_at || 'Just now'}</td>
+                                                <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{signup.created_at || 'Just now'}</td>
                                                 <td style={{ textAlign: 'right' }}>
                                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                                        <button type="button" onClick={() => handleApproveSignup(signup.uuid)} style={{ padding: '6px 14px', borderRadius: '6px', background: '#059669', color: '#0f172a', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.82rem' }}>
+                                                        <button type="button" onClick={() => handleApproveSignup(signup.uuid)} style={{ padding: '6px 14px', borderRadius: '6px', background: 'var(--success-text)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.82rem' }}>
                                                             Approve
                                                         </button>
-                                                        <button type="button" onClick={() => handleRejectSignup(signup.uuid)} style={{ padding: '6px 14px', borderRadius: '6px', background: '#dc2626', color: '#0f172a', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.82rem' }}>
+                                                        <button type="button" onClick={() => handleRejectSignup(signup.uuid)} style={{ padding: '6px 14px', borderRadius: '6px', background: 'var(--error-text)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.82rem' }}>
                                                             Reject
                                                         </button>
                                                     </div>
@@ -633,7 +644,7 @@ function CoordinatorDashboard({ user, onLogout }) {
                                                     </span>
                                                 </div>
                                                 {drive.description && (
-                                                    <div style={{ fontSize: '0.73rem', color: '#94a3b8', marginTop: '3px', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={drive.description}>
+                                                    <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', marginTop: '3px', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={drive.description}>
                                                         {drive.description}
                                                     </div>
                                                 )}
@@ -726,7 +737,7 @@ function CoordinatorDashboard({ user, onLogout }) {
                                     >
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                                <h4 className="card-company" style={{ color: '#0f766e', margin: 0 }}>{drive.company_name}</h4>
+                                                <h4 className="card-company" style={{ color: 'var(--primary)', margin: 0 }}>{drive.company_name}</h4>
                                                 <span className="round-count-badge">
                                                     {drive.total_rounds || 4} Rounds
                                                 </span>
@@ -744,7 +755,7 @@ function CoordinatorDashboard({ user, onLogout }) {
                                         </div>
                                         <div>
                                             <span className="lbl">Rounds</span>
-                                            <span className="val" style={{ color: '#fcd34d' }}>{drive.total_rounds || 4} Stages</span>
+                                            <span className="val" style={{ color: 'var(--warning-text)' }}>{drive.total_rounds || 4} Stages</span>
                                         </div>
                                         <div>
                                             <span className="lbl">Results</span>
@@ -752,7 +763,7 @@ function CoordinatorDashboard({ user, onLogout }) {
                                         </div>
                                     </div>
                                     {drive.description && (
-                                        <div style={{ fontSize: '0.74rem', color: '#94a3b8', margin: '4px 0 8px', lineHeight: '1.3', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} title={drive.description}>
+                                        <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '4px 0 8px', lineHeight: '1.3', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} title={drive.description}>
                                             {drive.description}
                                         </div>
                                     )}
@@ -1167,7 +1178,7 @@ function StudentTrackingView({ user, showToast }) {
                     </div>
                 </div>
 
-                <div className="filter-row-top" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px' }}>
+                <div className="filter-row-top" style={{ borderTop: '1px solid var(--border-light)', paddingTop: '12px' }}>
                     <div>
                         <div className="filter-section-title">Department Filter</div>
                         <div className="filter-pill-group">
@@ -1191,8 +1202,8 @@ function StudentTrackingView({ user, showToast }) {
                                 value={selectedStatus}
                                 onChange={(e) => setSelectedStatus(e.target.value)}
                                 style={{
-                                    background: 'rgba(15,23,42,0.8)',
-                                    color: '#0f172a',
+                                    background: 'var(--panel-hover)',
+                                    color: 'var(--text-primary)',
                                     border: '1px solid var(--border-color)',
                                     borderRadius: '6px',
                                     padding: '6px 12px',
@@ -1247,25 +1258,25 @@ function StudentTrackingView({ user, showToast }) {
                     <span className="kpi-lbl">Students in View ({selectedYear})</span>
                 </div>
                 <div className="kpi-card-track kpi-placed">
-                    <span className="kpi-val" style={{ color: '#059669' }}>
+                    <span className="kpi-val" style={{ color: 'var(--success-text)' }}>
                         {stats.placed_count} <span style={{ fontSize: '1rem', fontWeight: '500' }}>({stats.placement_rate_pct}%)</span>
                     </span>
                     <span className="kpi-lbl">Placed / Offers Accepted</span>
                 </div>
                 <div className="kpi-card-track kpi-process">
-                    <span className="kpi-val" style={{ color: '#0f766e' }}>{stats.in_process_count}</span>
+                    <span className="kpi-val" style={{ color: 'var(--primary)' }}>{stats.in_process_count}</span>
                     <span className="kpi-lbl">In Active Rounds</span>
                 </div>
                 <div className="kpi-card-track kpi-risk">
-                    <span className="kpi-val" style={{ color: '#d97706' }}>{stats.at_risk_count}</span>
+                    <span className="kpi-val" style={{ color: 'var(--warning-text)' }}>{stats.at_risk_count}</span>
                     <span className="kpi-lbl">Needs Academic Support</span>
                 </div>
                 <div className="kpi-card-track kpi-interventions">
-                    <span className="kpi-val" style={{ color: '#dc2626' }}>{stats.interventions_count}</span>
+                    <span className="kpi-val" style={{ color: 'var(--error-text)' }}>{stats.interventions_count}</span>
                     <span className="kpi-lbl">Active Interventions</span>
                 </div>
                 <div className="kpi-card-track">
-                    <span className="kpi-val" style={{ color: '#5eead4' }}>{stats.avg_cgpa}</span>
+                    <span className="kpi-val" style={{ color: 'var(--primary)' }}>{stats.avg_cgpa}</span>
                     <span className="kpi-lbl">Average CGPA</span>
                 </div>
             </div>
@@ -1311,7 +1322,7 @@ function StudentTrackingView({ user, showToast }) {
                                             <div className="card-student-reg">{s.register_number} • {s.email}</div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <div className="card-student-cgpa">★ {s.cgpa}</div>
+                                            <div className="card-student-cgpa">{s.cgpa}</div>
                                             <a
                                                 href={`/api/coordinator/export/student/${encodeURIComponent(s.register_number || s.email)}`}
                                                 download
@@ -1325,14 +1336,14 @@ function StudentTrackingView({ user, showToast }) {
                                                     fontSize: '0.72rem',
                                                     fontWeight: '600',
                                                     borderRadius: '5px',
-                                                    background: 'rgba(20, 184, 166, 0.15)',
-                                                    color: '#5eead4',
-                                                    border: '1px solid rgba(20, 184, 166, 0.3)',
+                                                    background: 'var(--primary-light)',
+                                                    color: 'var(--primary)',
+                                                    border: '1px solid var(--primary-subtle)',
                                                     textDecoration: 'none'
                                                 }}
                                                 title={`Download ${s.name}'s complete Excel dossier template`}
                                             >
-                                                📥 .xlsx
+                                                .xlsx
                                             </a>
                                         </div>
                                     </div>
@@ -1343,19 +1354,19 @@ function StudentTrackingView({ user, showToast }) {
 
                                         {s.placement_status === 'Placed' ? (
                                             <span className="status-pill-placed">
-                                                ✓ Placed {s.placed_company ? `(${s.placed_company})` : ''}
+                                                Placed {s.placed_company ? `(${s.placed_company})` : ''}
                                             </span>
                                         ) : s.placement_status === 'In Process' ? (
                                             <span className="status-pill-in-process">
-                                                ⚡ In Rounds ({s.drives_count} Drives)
+                                                In Rounds ({s.drives_count} Drives)
                                             </span>
                                         ) : s.placement_status === 'At Risk' ? (
                                             <span className="status-pill-at-risk">
-                                                ⚠️ Needs Support
+                                                Needs Support
                                             </span>
                                         ) : (
                                             <span className="status-pill-neutral">
-                                                ⚪ Not Started
+                                                Not Started
                                             </span>
                                         )}
 
@@ -1392,14 +1403,14 @@ function StudentTrackingView({ user, showToast }) {
                                                         alignItems: 'center',
                                                         gap: '6px',
                                                         padding: '5px 12px',
-                                                        background: 'linear-gradient(135deg, #134e4a, #0f766e)',
-                                                        color: '#ffffff',
+                                                        background: 'linear-gradient(135deg, var(--primary-hover), var(--primary))',
+                                                        color: '#fff',
                                                         borderRadius: '7px',
                                                         fontSize: '0.8rem',
                                                         fontWeight: '600',
                                                         textDecoration: 'none',
-                                                        border: '1px solid #14b8a6',
-                                                        boxShadow: '0 2px 8px rgba(37,99,235,0.25)',
+                                                        border: '1px solid var(--primary)',
+                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
                                                         cursor: 'pointer'
                                                     }}
                                                     title={`Download ${selectedStudent.name}'s complete placement & intervention Excel dossier template`}
@@ -1426,7 +1437,7 @@ function StudentTrackingView({ user, showToast }) {
 
                                     <div className="hero-right-metrics">
                                         <div className="hero-metric-item">
-                                            <div className="hero-metric-val" style={{ color: '#0f766e' }}>{selectedStudent.cgpa}</div>
+                                            <div className="hero-metric-val" style={{ color: 'var(--primary)' }}>{selectedStudent.cgpa}</div>
                                             <div className="hero-metric-lbl">CGPA</div>
                                         </div>
                                         <div className="hero-metric-item">
@@ -1443,8 +1454,8 @@ function StudentTrackingView({ user, showToast }) {
                                 {/* Placement Status Alert Banner */}
                                 {selectedStudent.placement_status === 'Placed' ? (
                                     <div style={{
-                                        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.25), rgba(16, 185, 129, 0.15))',
-                                        border: '1px solid rgba(16, 185, 129, 0.4)',
+                                        background: 'linear-gradient(135deg, var(--success-bg), var(--success-bg))',
+                                        border: '1px solid var(--success-border)',
                                         borderRadius: '10px',
                                         padding: '14px 18px',
                                         display: 'flex',
@@ -1452,18 +1463,18 @@ function StudentTrackingView({ user, showToast }) {
                                         justifyContent: 'space-between'
                                     }}>
                                         <div>
-                                            <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#059669', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                🎉 Placed & Selected
+                                            <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--success-text)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                Placed & Selected
                                             </span>
-                                            <div style={{ fontSize: '1.05rem', fontWeight: '700', color: '#ffffff', marginTop: '2px' }}>
+                                            <div style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-primary)', marginTop: '2px' }}>
                                                 {selectedStudent.placed_company || 'Campus Partner'} • {selectedStudent.placed_role || 'Software Engineer'}
                                             </div>
                                         </div>
                                         {selectedStudent.placed_package && (
                                             <div style={{
-                                                background: 'rgba(16, 185, 129, 0.2)',
-                                                color: '#059669',
-                                                border: '1px solid rgba(16, 185, 129, 0.4)',
+                                                background: 'var(--success-bg)',
+                                                color: 'var(--success-text)',
+                                                border: '1px solid var(--success-border)',
                                                 padding: '6px 14px',
                                                 borderRadius: '8px',
                                                 fontWeight: '700',
@@ -1475,8 +1486,8 @@ function StudentTrackingView({ user, showToast }) {
                                     </div>
                                 ) : selectedStudent.placement_status === 'In Process' ? (
                                     <div style={{
-                                        background: 'rgba(20, 184, 166, 0.12)',
-                                        border: '1px solid rgba(20, 184, 166, 0.35)',
+                                        background: 'var(--primary-light)',
+                                        border: '1px solid var(--primary-subtle)',
                                         borderRadius: '10px',
                                         padding: '12px 18px',
                                         display: 'flex',
@@ -1484,18 +1495,18 @@ function StudentTrackingView({ user, showToast }) {
                                         justifyContent: 'space-between'
                                     }}>
                                         <div>
-                                            <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#5eead4', textTransform: 'uppercase' }}>
-                                                ⚡ In Recruitment Pipeline
+                                            <span style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase' }}>
+                                                In Recruitment Pipeline
                                             </span>
-                                            <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#ffffff', marginTop: '2px' }}>
+                                            <div style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)', marginTop: '2px' }}>
                                                 Participating in {selectedStudent.drives_count} active placement drive(s)
                                             </div>
                                         </div>
                                     </div>
                                 ) : (
                                     <div style={{
-                                        background: 'rgba(245, 158, 11, 0.12)',
-                                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                                        background: 'var(--warning-bg)',
+                                        border: '1px solid var(--warning-border)',
                                         borderRadius: '10px',
                                         padding: '12px 18px',
                                         display: 'flex',
@@ -1503,10 +1514,10 @@ function StudentTrackingView({ user, showToast }) {
                                         justifyContent: 'space-between'
                                     }}>
                                         <div>
-                                            <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#d97706', textTransform: 'uppercase' }}>
-                                                ⚠️ Under Mentoring & Remediation
+                                            <span style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--warning-text)', textTransform: 'uppercase' }}>
+                                                Under Mentoring & Remediation
                                             </span>
-                                            <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#ffffff', marginTop: '2px' }}>
+                                            <div style={{ fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)', marginTop: '2px' }}>
                                                 {selectedStudent.open_interventions_count > 0 ? `${selectedStudent.open_interventions_count} active intervention plan in progress` : 'Needs mock interview preparation'}
                                             </div>
                                         </div>
@@ -1585,7 +1596,7 @@ function StudentTrackingView({ user, showToast }) {
                                                                 <span className="drive-role-title"> • {item.job_role}</span>
                                                             </div>
                                                             {item.ctc_lpa && (
-                                                                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#059669' }}>
+                                                                <span style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--success-text)' }}>
                                                                     ₹{item.ctc_lpa} LPA
                                                                 </span>
                                                             )}
@@ -1595,11 +1606,11 @@ function StudentTrackingView({ user, showToast }) {
                                                             <div className="round-status-head">
                                                                 <span>Stage: Round {item.round}</span>
                                                                 {isSelectedVerdict ? (
-                                                                    <span className="status-pill-placed">✓ {item.result}</span>
+                                                                    <span className="status-pill-placed">{item.result}</span>
                                                                 ) : isRejectedVerdict ? (
-                                                                    <span className="status-pill-at-risk">✕ {item.result}</span>
+                                                                    <span className="status-pill-at-risk">{item.result}</span>
                                                                 ) : (
-                                                                    <span className="status-pill-in-process">⚡ {item.result}</span>
+                                                                    <span className="status-pill-in-process">{item.result}</span>
                                                                 )}
                                                             </div>
 
@@ -1617,7 +1628,7 @@ function StudentTrackingView({ user, showToast }) {
                                                             )}
 
                                                             {item.weakness_area && (
-                                                                <div style={{ fontSize: '0.78rem', color: '#dc2626' }}>
+                                                                <div style={{ fontSize: '0.78rem', color: 'var(--error-text)' }}>
                                                                     <strong>Identified Gap:</strong> {item.weakness_area}
                                                                 </div>
                                                             )}
@@ -1651,11 +1662,11 @@ function StudentTrackingView({ user, showToast }) {
                                             <div style={{
                                                 padding: '30px',
                                                 textAlign: 'center',
-                                                background: 'rgba(16, 185, 129, 0.08)',
-                                                border: '1px solid rgba(16, 185, 129, 0.25)',
+                                                background: 'var(--success-bg)',
+                                                border: '1px solid var(--success-border)',
                                                 borderRadius: '10px'
                                             }}>
-                                                <h4 style={{ color: '#059669', marginBottom: '6px' }}>Clear Academic & Placement Record</h4>
+                                                <h4 style={{ color: 'var(--success-text)', marginBottom: '6px' }}>Clear Academic & Placement Record</h4>
                                                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                                                     This student does not currently have any remediation alerts. All assessment scores are satisfactory.
                                                 </p>
@@ -1676,8 +1687,8 @@ function StudentTrackingView({ user, showToast }) {
                                                                     fontWeight: '600',
                                                                     padding: '2px 8px',
                                                                     borderRadius: '4px',
-                                                                    background: iv.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(20, 184, 166, 0.2)',
-                                                                    color: iv.status === 'RESOLVED' ? '#059669' : '#5eead4'
+                                                                    background: iv.status === 'RESOLVED' ? 'var(--success-bg)' : 'var(--primary-light)',
+                                                                    color: iv.status === 'RESOLVED' ? 'var(--success-text)' : 'var(--primary)'
                                                                 }}>
                                                                     {iv.status}
                                                                 </span>
@@ -1687,8 +1698,8 @@ function StudentTrackingView({ user, showToast }) {
                                                         {iv.failure_summary && (
                                                             <div style={{
                                                                 fontSize: '0.82rem',
-                                                                color: '#f87171',
-                                                                background: 'rgba(239, 68, 68, 0.1)',
+                                                                color: 'var(--error-text)',
+                                                                background: 'var(--error-bg)',
                                                                 padding: '8px 12px',
                                                                 borderRadius: '6px'
                                                             }}>
@@ -1699,8 +1710,8 @@ function StudentTrackingView({ user, showToast }) {
                                                         {iv.ai_analysis && (
                                                             <div style={{
                                                                 fontSize: '0.82rem',
-                                                                color: '#5eead4',
-                                                                background: 'rgba(20, 184, 166, 0.1)',
+                                                                color: 'var(--primary)',
+                                                                background: 'var(--primary-light)',
                                                                 padding: '8px 12px',
                                                                 borderRadius: '6px'
                                                             }}>
@@ -1748,17 +1759,17 @@ function StudentTrackingView({ user, showToast }) {
                                 {/* Tab 3: Profile & Technical Skills */}
                                 {inspectorTab === 'profile' && (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                                        <div style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '16px' }}>
-                                            <h4 style={{ fontSize: '0.9rem', color: '#0f172a', marginBottom: '10px' }}>Technical Skillset</h4>
+                                        <div style={{ background: 'var(--panel-hover)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '16px' }}>
+                                            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '10px' }}>Technical Skillset</h4>
                                             {selectedStudent.skills_list && selectedStudent.skills_list.length > 0 ? (
                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                                     {selectedStudent.skills_list.map((sk, skIdx) => (
                                                         <span
                                                             key={skIdx}
                                                             style={{
-                                                                background: 'rgba(20, 184, 166, 0.15)',
-                                                                color: '#5eead4',
-                                                                border: '1px solid rgba(20, 184, 166, 0.3)',
+                                                                background: 'var(--primary-light)',
+                                                                color: 'var(--primary)',
+                                                                border: '1px solid var(--primary-subtle)',
                                                                 padding: '4px 10px',
                                                                 borderRadius: '6px',
                                                                 fontSize: '0.8rem',
@@ -1774,12 +1785,12 @@ function StudentTrackingView({ user, showToast }) {
                                             )}
                                         </div>
 
-                                        <div style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '16px' }}>
-                                            <h4 style={{ fontSize: '0.9rem', color: '#0f172a', marginBottom: '10px' }}>Assigned Mentors & Notes</h4>
+                                        <div style={{ background: 'var(--panel-hover)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '16px' }}>
+                                            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '10px' }}>Assigned Mentors & Notes</h4>
                                             {selectedStudent.mentor_notes && selectedStudent.mentor_notes.length > 0 ? (
                                                 selectedStudent.mentor_notes.map((mn, mnIdx) => (
-                                                    <div key={mn.note_id || mnIdx} style={{ padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                                                        <div style={{ fontSize: '0.82rem', color: '#334155' }}>{mn.content}</div>
+                                                    <div key={mn.note_id || mnIdx} style={{ padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
+                                                        <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{mn.content}</div>
                                                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>{mn.created_at}</div>
                                                     </div>
                                                 ))
@@ -1819,7 +1830,7 @@ function StudentTrackingView({ user, showToast }) {
                                 <tr key={s.student_id || s.email}>
                                     <td><strong>{s.register_number}</strong></td>
                                     <td>
-                                        <div style={{ fontWeight: '600', color: '#0f172a' }}>{s.name}</div>
+                                        <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{s.name}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.email}</div>
                                     </td>
                                     <td><span className="dept-tag">{s.department}</span></td>
@@ -1827,18 +1838,18 @@ function StudentTrackingView({ user, showToast }) {
                                     <td><strong>{s.cgpa}</strong></td>
                                     <td>
                                         {s.placement_status === 'Placed' ? (
-                                            <span className="status-pill-placed">✓ Placed</span>
+                                            <span className="status-pill-placed">Placed</span>
                                         ) : s.placement_status === 'In Process' ? (
-                                            <span className="status-pill-in-process">⚡ In Process</span>
+                                            <span className="status-pill-in-process">In Process</span>
                                         ) : s.placement_status === 'At Risk' ? (
-                                            <span className="status-pill-at-risk">⚠️ At Risk</span>
+                                            <span className="status-pill-at-risk">At Risk</span>
                                         ) : (
-                                            <span className="status-pill-neutral">⚪ Not Started</span>
+                                            <span className="status-pill-neutral">Not Started</span>
                                         )}
                                     </td>
                                     <td>
                                         {s.placed_company ? (
-                                            <span style={{ color: '#059669', fontWeight: '600' }}>
+                                            <span style={{ color: 'var(--success-text)', fontWeight: '600' }}>
                                                 {s.placed_company} ({s.placed_package ? `₹${s.placed_package} LPA` : 'Selected'})
                                             </span>
                                         ) : s.process_history.length > 0 ? (
@@ -1855,7 +1866,7 @@ function StudentTrackingView({ user, showToast }) {
                                                 {s.interventions.length} Plan ({s.highest_risk})
                                             </span>
                                         ) : (
-                                            <span style={{ color: '#059669', fontSize: '0.8rem' }}>Clear</span>
+                                            <span style={{ color: 'var(--success-text)', fontSize: '0.8rem' }}>Clear</span>
                                         )}
                                     </td>
                                     <td>
@@ -1875,9 +1886,9 @@ function StudentTrackingView({ user, showToast }) {
                                                 download
                                                 className="btn-inspect-student"
                                                 style={{
-                                                    background: 'rgba(16, 185, 129, 0.15)',
-                                                    color: '#059669',
-                                                    borderColor: 'rgba(16, 185, 129, 0.35)',
+                                                    background: 'var(--success-bg)',
+                                                    color: 'var(--success-text)',
+                                                    borderColor: 'var(--success-border)',
                                                     textDecoration: 'none',
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
@@ -1886,7 +1897,7 @@ function StudentTrackingView({ user, showToast }) {
                                                 }}
                                                 title={`Download ${s.name}'s individual Excel dossier`}
                                             >
-                                                📥 .xlsx
+                                                .xlsx
                                             </a>
                                         </div>
                                     </td>

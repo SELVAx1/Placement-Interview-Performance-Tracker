@@ -1,4 +1,4 @@
-function StudentDashboard({ user, onLogout }) {
+function StudentDashboard({ user, onLogout, theme, onToggleTheme }) {
     // Navigation Tabs: 'drives', 'results', 'applications', 'analysis', 'interventions', 'profile'
     const [activeTab, setActiveTab] = React.useState('drives');
 
@@ -359,8 +359,8 @@ function StudentDashboard({ user, onLogout }) {
                             style={{
                                 padding: '6px 12px',
                                 borderRadius: '6px',
-                                background: activeTab === tab.id ? '#0f766e' : 'transparent',
-                                color: activeTab === tab.id ? '#ffffff' : '#64748b',
+                                background: activeTab === tab.id ? 'var(--primary)' : 'transparent',
+                                color: activeTab === tab.id ? 'var(--panel-bg)' : 'var(--text-secondary)',
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontWeight: '600',
@@ -375,17 +375,17 @@ function StudentDashboard({ user, onLogout }) {
 
                 <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                     <div className="user-profile" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="user-avatar" style={{ background: '#0f766e', color: '#fff', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem', flexShrink: 0 }}>
+                        <div className="user-avatar" style={{ background: 'var(--primary)', color: '#fff', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem', flexShrink: 0 }}>
                             {user?.name ? user.name[0].toUpperCase() : 'S'}
                         </div>
                         <div className="user-info">
-                            <span className="user-name" style={{ fontWeight: '600', color: '#0f172a', fontSize: '0.8rem', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{user?.gmail || 'student@gmail.com'}</span>
+                            <span className="user-name" style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.8rem', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{user?.gmail || 'student@gmail.com'}</span>
                             <div style={{ display: 'flex', gap: '6px', marginTop: '2px', alignItems: 'center' }}>
-                                <span className="user-role-badge" style={{ background: '#059669', color: '#0f172a', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px' }}>Student</span>
+                                <span className="user-role-badge" style={{ background: 'var(--success-text)', color: 'var(--text-primary)', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px' }}>Student</span>
                                 <span className="status-badge" style={{
-                                    background: placedResult ? 'rgba(16, 185, 129, 0.2)' : myApplications.length > 0 ? 'rgba(20, 184, 166, 0.2)' : 'rgba(148, 163, 184, 0.2)',
-                                    color: placedResult ? '#059669' : myApplications.length > 0 ? '#0f766e' : '#94a3b8',
-                                    border: `1px solid ${placedResult ? 'rgba(16, 185, 129, 0.4)' : myApplications.length > 0 ? 'rgba(20, 184, 166, 0.4)' : 'rgba(148, 163, 184, 0.4)'}`,
+                                    background: placedResult ? 'var(--success-bg)' : myApplications.length > 0 ? 'var(--primary-light)' : 'var(--panel-hover)',
+                                    color: placedResult ? 'var(--success-text)' : myApplications.length > 0 ? 'var(--primary)' : 'var(--text-muted)',
+                                    border: `1px solid ${placedResult ? 'var(--success-border)' : myApplications.length > 0 ? 'var(--primary-subtle)' : 'var(--border-color)'}`,
                                     fontSize: '0.75rem',
                                     padding: '2px 8px',
                                     borderRadius: '12px',
@@ -396,7 +396,14 @@ function StudentDashboard({ user, onLogout }) {
                             </div>
                         </div>
                     </div>
-                    <button type="button" className="logout-btn" onClick={onLogout} style={{ padding: '8px 14px', borderRadius: '6px', background: '#e2e8f0', color: '#0f172a', border: 'none', cursor: 'pointer' }}>
+                    {onToggleTheme && (
+                        <button type="button" className="theme-toggle" onClick={onToggleTheme} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                {theme === 'dark' ? (<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>) : (<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>)}
+                            </svg>
+                        </button>
+                    )}
+                    <button type="button" className="logout-btn" onClick={onLogout} style={{ padding: '8px 14px', borderRadius: '6px', background: 'var(--border-color)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer' }}>
                         Sign Out
                     </button>
                 </div>
@@ -404,7 +411,7 @@ function StudentDashboard({ user, onLogout }) {
 
             {/* Toast Notification */}
             {toastMessage && (
-                <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 1000, background: '#0f766e', color: '#0f172a', padding: '12px 20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', fontWeight: '600' }}>
+                <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 1000, background: 'var(--primary)', color: 'var(--text-primary)', padding: '12px 20px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', fontWeight: '600' }}>
                     {toastMessage}
                 </div>
             )}
@@ -414,23 +421,23 @@ function StudentDashboard({ user, onLogout }) {
 
                 {/* TAB 1: ACTIVE DRIVES & DIRECT APPLY */}
                 {activeTab === 'drives' && (
-                    <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                    <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                             <div>
-                                <h3 style={{ color: '#0f172a', fontSize: '1.25rem' }}>Active Recruitment Drives</h3>
-                                <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Apply for open campus placement opportunities.</p>
+                                <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem' }}>Active Recruitment Drives</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Apply for open campus placement opportunities.</p>
                             </div>
                         </div>
 
                         {loading ? (
-                            <p style={{ color: '#94a3b8' }}>Loading placement drives...</p>
+                            <p style={{ color: 'var(--text-muted)' }}>Loading placement drives...</p>
                         ) : allDrives.length === 0 ? (
-                            <p style={{ color: '#94a3b8' }}>No active recruitment drives currently open.</p>
+                            <p style={{ color: 'var(--text-muted)' }}>No active recruitment drives currently open.</p>
                         ) : (
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                     <thead>
-                                        <tr style={{ borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.85rem' }}>
+                                        <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                                             <th style={{ padding: '12px' }}>COMPANY</th>
                                             <th style={{ padding: '12px' }}>JOB ROLE</th>
                                             <th style={{ padding: '12px' }}>PACKAGE (CTC)</th>
@@ -446,32 +453,32 @@ function StudentDashboard({ user, onLogout }) {
                                             const isApplied = myApplications.some(a => a.drive_id === d.id);
 
                                             return (
-                                                <tr key={d.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#0f172a' }}>
+                                                <tr key={d.id} style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
                                                     <td style={{ padding: '12px', fontWeight: 'bold' }}>{d.company_name}</td>
                                                     <td style={{ padding: '12px' }}>{d.job_role}</td>
-                                                    <td style={{ padding: '12px', color: '#059669', fontWeight: 'bold' }}>₹{d.ctc_lpa} LPA</td>
+                                                    <td style={{ padding: '12px', color: 'var(--success-text)', fontWeight: 'bold' }}>₹{d.ctc_lpa} LPA</td>
                                                     <td style={{ padding: '12px' }}>{d.min_cgpa || 'Open'}</td>
                                                     <td style={{ padding: '12px' }}>{d.location}</td>
                                                     <td style={{ padding: '12px' }}>
-                                                        <span style={{ background: 'rgba(59,130,246,0.15)', color: '#0f766e', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                                        <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                                                             Round {d.current_round || 1}
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: '12px', textAlign: 'right' }}>
                                                         {isApplied ? (
-                                                            <span style={{ background: 'rgba(16,185,129,0.2)', color: '#059669', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                                                                Applied &check;
+                                                            <span style={{ background: 'var(--success-bg)', color: 'var(--success-text)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                                Applied
                                                             </span>
                                                         ) : isEligible ? (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleApplyDrive(d)}
-                                                                style={{ padding: '6px 14px', borderRadius: '6px', background: '#0f766e', color: '#0f172a', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
+                                                                style={{ padding: '6px 14px', borderRadius: '6px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
                                                             >
                                                                 Apply Now
                                                             </button>
                                                         ) : (
-                                                            <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: '500' }}>
+                                                            <span style={{ color: 'var(--error-text)', fontSize: '0.8rem', fontWeight: '500' }}>
                                                                 CGPA Below {d.min_cgpa}
                                                             </span>
                                                         )}
@@ -488,17 +495,17 @@ function StudentDashboard({ user, onLogout }) {
 
                 {/* TAB 2: MY ROUND RESULTS */}
                 {activeTab === 'results' && (
-                    <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                        <h3 style={{ color: '#0f172a', fontSize: '1.25rem', marginBottom: '8px' }}>Drive Shortlists & Evaluation Results</h3>
-                        <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '20px' }}>Your round-by-round status updates uploaded by placement coordinators.</p>
+                    <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                        <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', marginBottom: '8px' }}>Drive Shortlists & Evaluation Results</h3>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '20px' }}>Your round-by-round status updates uploaded by placement coordinators.</p>
 
                         {myResults.length === 0 ? (
-                            <p style={{ color: '#94a3b8' }}>No round evaluation results published yet.</p>
+                            <p style={{ color: 'var(--text-muted)' }}>No round evaluation results published yet.</p>
                         ) : (
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                     <thead>
-                                        <tr style={{ borderBottom: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.85rem' }}>
+                                        <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                                             <th style={{ padding: '12px' }}>COMPANY</th>
                                             <th style={{ padding: '12px' }}>JOB ROLE</th>
                                             <th style={{ padding: '12px' }}>ROUND NO</th>
@@ -508,11 +515,11 @@ function StudentDashboard({ user, onLogout }) {
                                     </thead>
                                     <tbody>
                                         {myResults.map((r, idx) => (
-                                            <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#0f172a' }}>
+                                            <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
                                                 <td style={{ padding: '12px', fontWeight: 'bold' }}>{r.company_name}</td>
                                                 <td style={{ padding: '12px' }}>{r.job_role}</td>
                                                 <td style={{ padding: '12px' }}>
-                                                    <span style={{ background: 'rgba(99,102,241,0.15)', color: '#d97706', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                                    <span style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                                                         Round {r.round || 1}
                                                     </span>
                                                 </td>
@@ -525,28 +532,28 @@ function StudentDashboard({ user, onLogout }) {
                                                         background: (() => {
                                                             const res = (r.result || '').toLowerCase();
                                                             const isNeg = res.includes('not select') || res.includes('reject') || res.includes('fail');
-                                                            if (isNeg) return 'rgba(239,68,68,0.2)';
+                                                            if (isNeg) return 'var(--error-bg)';
                                                             if (res.includes('applied') || res.includes('registered') || res.includes('in progress')) {
-                                                                return 'rgba(56,189,248,0.2)';
+                                                                return 'var(--primary-light)';
                                                             }
                                                             const isPos = res.includes('select') || res.includes('shortlist') || res.includes('placed') || res.includes('offer') || res.includes('pass') || res.includes('clear');
-                                                            return isPos ? 'rgba(16,185,129,0.2)' : 'rgba(148,163,184,0.2)';
+                                                            return isPos ? 'var(--success-bg)' : 'var(--panel-hover)';
                                                         })(),
                                                         color: (() => {
                                                             const res = (r.result || '').toLowerCase();
                                                             const isNeg = res.includes('not select') || res.includes('reject') || res.includes('fail');
-                                                            if (isNeg) return '#dc2626';
+                                                            if (isNeg) return 'var(--error-text)';
                                                             if (res.includes('applied') || res.includes('registered') || res.includes('in progress')) {
-                                                                return '#0891b2';
+                                                                return 'var(--primary)';
                                                             }
                                                             const isPos = res.includes('select') || res.includes('shortlist') || res.includes('placed') || res.includes('offer') || res.includes('pass') || res.includes('clear');
-                                                            return isPos ? '#059669' : '#94a3b8';
+                                                            return isPos ? 'var(--success-text)' : 'var(--text-muted)';
                                                         })()
                                                     }}>
                                                         {r.result}
                                                     </span>
                                                 </td>
-                                                <td style={{ padding: '12px', textAlign: 'right', color: '#64748b', fontSize: '0.8rem' }}>
+                                                <td style={{ padding: '12px', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                                                     {r.updated_at}
                                                 </td>
                                             </tr>
@@ -560,21 +567,21 @@ function StudentDashboard({ user, onLogout }) {
 
                 {/* TAB 3: MY APPLIED DRIVES */}
                 {activeTab === 'applications' && (
-                    <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                        <h3 style={{ color: '#0f172a', fontSize: '1.25rem', marginBottom: '8px' }}>My Drive Applications</h3>
-                        <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '20px' }}>Tracking status for drives you have registered for.</p>
+                    <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                        <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', marginBottom: '8px' }}>My Drive Applications</h3>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '20px' }}>Tracking status for drives you have registered for.</p>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                             {myApplications.map((app, idx) => (
-                                <div key={idx} style={{ background: '#ffffff', padding: '18px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <div key={idx} style={{ background: 'var(--panel-bg)', padding: '18px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <h4 style={{ color: '#0f172a', fontSize: '1.05rem', fontWeight: 'bold' }}>{app.company_name}</h4>
-                                        <span style={{ background: 'rgba(59,130,246,0.2)', color: '#0f766e', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                        <h4 style={{ color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>{app.company_name}</h4>
+                                        <span style={{ background: 'var(--primary-subtle)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                                             {app.final_status || 'REGISTERED'}
                                         </span>
                                     </div>
-                                    <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>Role: {app.job_role || 'SDE'}</p>
-                                    <p style={{ color: '#059669', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '4px' }}>₹{app.ctc_lpa || '12.0'} LPA</p>
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>Role: {app.job_role || 'SDE'}</p>
+                                    <p style={{ color: 'var(--success-text)', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '4px' }}>₹{app.ctc_lpa || '12.0'} LPA</p>
                                 </div>
                             ))}
                         </div>
@@ -583,32 +590,32 @@ function StudentDashboard({ user, onLogout }) {
 
                 {/* TAB 4: FAILURE & PERFORMANCE ANALYSIS */}
                 {activeTab === 'analysis' && analysisData && (
-                    <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                        <h3 style={{ color: '#0f172a', fontSize: '1.25rem', marginBottom: '20px' }}>Performance & Failure Pattern Analysis</h3>
+                    <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                        <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', marginBottom: '20px' }}>Performance & Failure Pattern Analysis</h3>
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-                            <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Round Pass Rate</span>
-                                <h4 style={{ fontSize: '2rem', color: '#059669', marginTop: '6px' }}>{analysisData.pass_rate}%</h4>
+                            <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Round Pass Rate</span>
+                                <h4 style={{ fontSize: '2rem', color: 'var(--success-text)', marginTop: '6px' }}>{analysisData.pass_rate}%</h4>
                             </div>
-                            <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Primary Weakness Round</span>
-                                <h4 style={{ fontSize: '1.1rem', color: '#b45309', marginTop: '6px' }}>{analysisData.most_failed_round || 'Aptitude'}</h4>
+                            <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Primary Weakness Round</span>
+                                <h4 style={{ fontSize: '1.1rem', color: 'var(--accent)', marginTop: '6px' }}>{analysisData.most_failed_round || 'Aptitude'}</h4>
                             </div>
-                            <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Assessed Risk Level</span>
-                                <h4 style={{ fontSize: '1.2rem', color: analysisData.risk_level === 'high' ? '#ef4444' : '#0f766e', marginTop: '6px', textTransform: 'uppercase' }}>
+                            <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Assessed Risk Level</span>
+                                <h4 style={{ fontSize: '1.2rem', color: analysisData.risk_level === 'high' ? 'var(--error-text)' : 'var(--primary)', marginTop: '6px', textTransform: 'uppercase' }}>
                                     {analysisData.risk_level} Risk
                                 </h4>
                             </div>
                         </div>
 
-                        <div style={{ background: '#ffffff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                            <h4 style={{ color: '#334155', fontSize: '1rem', marginBottom: '12px' }}>Identified Concept Weakness Areas:</h4>
+                        <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                            <h4 style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '12px' }}>Identified Concept Weakness Areas:</h4>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                                 {(analysisData.top_weaknesses || []).map((w, i) => (
-                                    <span key={i} style={{ background: '#ffffff', color: '#0f172a', padding: '6px 14px', borderRadius: '20px', border: '1px solid #e2e8f0', fontSize: '0.85rem' }}>
-                                        {w.area} &bull; <strong style={{ color: '#dc2626' }}>{w.count} flags</strong>
+                                    <span key={i} style={{ background: 'var(--panel-bg)', color: 'var(--text-primary)', padding: '6px 14px', borderRadius: '20px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                                        {w.area} &bull; <strong style={{ color: 'var(--error-text)' }}>{w.count} flags</strong>
                                     </span>
                                 ))}
                             </div>
@@ -627,12 +634,12 @@ function StudentDashboard({ user, onLogout }) {
 
                 {/* TAB 5: PERSONAL INFO & ACADEMIC PROFILE & CODING PLATFORMS */}
                 {activeTab === 'profile' && studentProfile && (
-                    <div className="card" style={{ background: '#ffffff', padding: '24px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                    <div className="card" style={{ background: 'var(--panel-bg)', padding: '24px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                         {/* Header with Title and Edit Mode Toggle */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
                             <div>
-                                <h3 style={{ color: '#0f172a', fontSize: '1.25rem', margin: 0 }}>Student Profile & Coding Platform Activity</h3>
-                                <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '4px' }}>
+                                <h3 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', margin: 0 }}>Student Profile & Coding Platform Activity</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '4px' }}>
                                     Manage your personal credentials, resume document, and competitive coding handles across LeetCode, Codeforces, CodeChef, HackerRank & AtCoder.
                                 </p>
                             </div>
@@ -647,13 +654,13 @@ function StudentDashboard({ user, onLogout }) {
                                             gap: '8px',
                                             padding: '8px 18px',
                                             borderRadius: '6px',
-                                            background: '#0f766e',
-                                            color: '#ffffff',
+                                            background: 'var(--primary)',
+                                            color: 'var(--panel-bg)',
                                             border: 'none',
                                             cursor: 'pointer',
                                             fontWeight: '600',
                                             fontSize: '0.88rem',
-                                            boxShadow: '0 2px 8px rgba(37,99,235,0.3)'
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                                         }}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
@@ -674,8 +681,8 @@ function StudentDashboard({ user, onLogout }) {
                                                 gap: '8px',
                                                 padding: '8px 18px',
                                                 borderRadius: '6px',
-                                                background: '#10b981',
-                                                color: '#ffffff',
+                                                background: 'var(--success-text)',
+                                                color: 'var(--panel-bg)',
                                                 border: 'none',
                                                 cursor: 'pointer',
                                                 fontWeight: '600',
@@ -693,8 +700,8 @@ function StudentDashboard({ user, onLogout }) {
                                             style={{
                                                 padding: '8px 16px',
                                                 borderRadius: '6px',
-                                                background: '#e2e8f0',
-                                                color: '#0f172a',
+                                                background: 'var(--border-color)',
+                                                color: 'var(--text-primary)',
                                                 border: 'none',
                                                 cursor: 'pointer',
                                                 fontWeight: '600',
@@ -709,34 +716,34 @@ function StudentDashboard({ user, onLogout }) {
                         </div>
 
                         {/* Top Summary Banner */}
-                        <div style={{ background: '#ffffff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                        <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '10px', border: '1px solid var(--border-color)', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #0f766e, #0d9488)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontWeight: 'bold', fontSize: '1.5rem', boxShadow: '0 4px 12px rgba(37,99,235,0.4)' }}>
+                                <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--panel-bg)', fontWeight: 'bold', fontSize: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
                                     {studentProfile.name ? studentProfile.name.charAt(0).toUpperCase() : 'S'}
                                 </div>
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <h4 style={{ color: '#0f172a', fontSize: '1.25rem', margin: 0, fontWeight: '700' }}>{studentProfile.name}</h4>
-                                        <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 'bold' }}>
+                                        <h4 style={{ color: 'var(--text-primary)', fontSize: '1.25rem', margin: 0, fontWeight: '700' }}>{studentProfile.name}</h4>
+                                        <span style={{ background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid var(--success-border)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.72rem', fontWeight: 'bold' }}>
                                             Verified Candidate
                                         </span>
                                     </div>
-                                    <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '4px 0 0 0' }}>
-                                        {studentProfile.email || user.gmail} &bull; Reg: <strong style={{ color: '#0f766e' }}>{studentProfile.register_number || 'N/A'}</strong> &bull; {studentProfile.year || '4th Year'}
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '4px 0 0 0' }}>
+                                        {studentProfile.email || user.gmail} &bull; Reg: <strong style={{ color: 'var(--primary)' }}>{studentProfile.register_number || 'N/A'}</strong> &bull; {studentProfile.year || '4th Year'}
                                     </p>
                                 </div>
                             </div>
 
                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                                <span style={{ background: 'rgba(20, 184, 166, 0.15)', color: '#0f766e', border: '1px solid rgba(20, 184, 166, 0.3)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                                <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary-subtle)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
                                     Dept: {studentProfile.department || 'Not Assigned'}
                                 </span>
-                                <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                                <span style={{ background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid var(--success-border)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>
                                     CGPA: {studentProfile.cgpa !== null && studentProfile.cgpa !== undefined ? studentProfile.cgpa : 'N/A'}
                                 </span>
                                 {studentProfile.phone && (
-                                    <span style={{ background: 'rgba(148, 163, 184, 0.15)', color: '#334155', border: '1px solid rgba(148, 163, 184, 0.3)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.85rem' }}>
-                                        📞 {studentProfile.phone}
+                                    <span style={{ background: 'var(--panel-hover)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', padding: '6px 14px', borderRadius: '6px', fontSize: '0.85rem' }}>
+                                        {studentProfile.phone}
                                     </span>
                                 )}
                             </div>
@@ -745,41 +752,41 @@ function StudentDashboard({ user, onLogout }) {
                         {/* ============================================================== */}
                         {/* SECTION 1: CODING PLATFORMS & MONTHLY PROBLEM SOLVING ENGINE   */}
                         {/* ============================================================== */}
-                        <div style={{ background: '#ffffff', padding: '22px', borderRadius: '10px', border: '1px solid #14b8a6', marginBottom: '24px', boxShadow: '0 4px 20px rgba(37,99,235,0.1)' }}>
+                        <div style={{ background: 'var(--panel-bg)', padding: '22px', borderRadius: '10px', border: '1px solid var(--primary)', marginBottom: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
                                 <div>
-                                    <h4 style={{ color: '#0f766e', fontSize: '1.1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <h4 style={{ color: 'var(--primary)', fontSize: '1.1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '20px', height: '20px' }}>
                                             <polyline points="16 18 22 12 16 6"></polyline>
                                             <polyline points="8 6 2 12 8 18"></polyline>
                                         </svg>
                                         Competitive Coding Profiles & Monthly Activity Tracker
                                     </h4>
-                                    <p style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '4px' }}>
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '4px' }}>
                                         Visible at any time to Placement Coordinators, Department heads, and Mentors to monitor practical coding consistency.
                                     </p>
                                 </div>
 
                                 {/* Monthly Total Solved Highlight Counter */}
                                 <div style={{
-                                    background: 'linear-gradient(135deg, rgba(15, 118, 110, 0.25), rgba(180, 83, 9, 0.25))',
-                                    border: '1px solid #14b8a6',
+                                    background: 'linear-gradient(135deg, var(--primary-light), var(--accent-light))',
+                                    border: '1px solid var(--primary)',
                                     padding: '10px 18px',
                                     borderRadius: '8px',
                                     textAlign: 'right'
                                 }}>
-                                    <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         Total Solved This Month
                                     </div>
-                                    <div style={{ color: '#0891b2', fontSize: '1.75rem', fontWeight: '800', lineHeight: 1.1 }}>
-                                        🔥 {isEditingProfile
+                                    <div style={{ color: 'var(--primary)', fontSize: '1.75rem', fontWeight: '800', lineHeight: 1.1 }}>
+                                        {isEditingProfile
                                             ? ((parseInt(profileFormData.leetcode_solved_month || 0, 10) || 0) +
                                                (parseInt(profileFormData.codeforces_solved_month || 0, 10) || 0) +
                                                (parseInt(profileFormData.codechef_solved_month || 0, 10) || 0) +
                                                (parseInt(profileFormData.hackerrank_solved_month || 0, 10) || 0) +
                                                (parseInt(profileFormData.atcoder_solved_month || 0, 10) || 0))
                                             : (studentProfile.monthly_total_solved || 0)
-                                        } <span style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 'normal' }}>Problems</span>
+                                        } <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Problems</span>
                                     </div>
                                 </div>
                             </div>
@@ -788,271 +795,271 @@ function StudentDashboard({ user, onLogout }) {
                             {!isEditingProfile ? (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '14px' }}>
                                     {/* 1. LeetCode */}
-                                    <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <span style={{ color: '#b45309', fontWeight: 'bold', fontSize: '0.95rem' }}>LeetCode</span>
-                                            <span style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                                            <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.95rem' }}>LeetCode</span>
+                                            <span style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
                                                 +{studentProfile.leetcode_solved_month || 0} this mo
                                             </span>
                                         </div>
-                                        <div style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: '600' }}>
-                                            {studentProfile.leetcode_handle ? `@${studentProfile.leetcode_handle}` : <span style={{ color: '#94a3b8' }}>Not linked</span>}
+                                        <div style={{ color: 'var(--text-primary)', fontSize: '0.95rem', fontWeight: '600' }}>
+                                            {studentProfile.leetcode_handle ? `@${studentProfile.leetcode_handle}` : <span style={{ color: 'var(--text-muted)' }}>Not linked</span>}
                                         </div>
-                                        <div style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '6px' }}>
-                                            Total Solved: <strong style={{ color: '#334155' }}>{studentProfile.leetcode_total_solved || 0}</strong>
+                                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '6px' }}>
+                                            Total Solved: <strong style={{ color: 'var(--text-secondary)' }}>{studentProfile.leetcode_total_solved || 0}</strong>
                                         </div>
                                     </div>
 
                                     {/* 2. Codeforces */}
-                                    <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <span style={{ color: '#0891b2', fontWeight: 'bold', fontSize: '0.95rem' }}>Codeforces</span>
-                                            <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#0891b2', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                                            <span style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.95rem' }}>Codeforces</span>
+                                            <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
                                                 +{studentProfile.codeforces_solved_month || 0} this mo
                                             </span>
                                         </div>
-                                        <div style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: '600' }}>
-                                            {studentProfile.codeforces_handle ? `@${studentProfile.codeforces_handle}` : <span style={{ color: '#94a3b8' }}>Not linked</span>}
+                                        <div style={{ color: 'var(--text-primary)', fontSize: '0.95rem', fontWeight: '600' }}>
+                                            {studentProfile.codeforces_handle ? `@${studentProfile.codeforces_handle}` : <span style={{ color: 'var(--text-muted)' }}>Not linked</span>}
                                         </div>
-                                        <div style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '6px' }}>
-                                            Rating: <strong style={{ color: '#334155' }}>{studentProfile.codeforces_rating || 0}</strong>
+                                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '6px' }}>
+                                            Rating: <strong style={{ color: 'var(--text-secondary)' }}>{studentProfile.codeforces_rating || 0}</strong>
                                         </div>
                                     </div>
 
                                     {/* 3. CodeChef */}
-                                    <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <span style={{ color: '#ea580c', fontWeight: 'bold', fontSize: '0.95rem' }}>CodeChef</span>
-                                            <span style={{ background: 'rgba(251, 146, 60, 0.15)', color: '#ea580c', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                                            <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.95rem' }}>CodeChef</span>
+                                            <span style={{ background: 'var(--accent-light)', color: 'var(--accent)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
                                                 +{studentProfile.codechef_solved_month || 0} this mo
                                             </span>
                                         </div>
-                                        <div style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: '600' }}>
-                                            {studentProfile.codechef_handle ? `@${studentProfile.codechef_handle}` : <span style={{ color: '#94a3b8' }}>Not linked</span>}
+                                        <div style={{ color: 'var(--text-primary)', fontSize: '0.95rem', fontWeight: '600' }}>
+                                            {studentProfile.codechef_handle ? `@${studentProfile.codechef_handle}` : <span style={{ color: 'var(--text-muted)' }}>Not linked</span>}
                                         </div>
-                                        <div style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '6px' }}>
-                                            Tier: <strong style={{ color: '#334155' }}>{studentProfile.codechef_stars || 'Unrated'}</strong>
+                                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '6px' }}>
+                                            Tier: <strong style={{ color: 'var(--text-secondary)' }}>{studentProfile.codechef_stars || 'Unrated'}</strong>
                                         </div>
                                     </div>
 
                                     {/* 4. HackerRank */}
-                                    <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <span style={{ color: '#059669', fontWeight: 'bold', fontSize: '0.95rem' }}>HackerRank</span>
-                                            <span style={{ background: 'rgba(52, 211, 153, 0.15)', color: '#059669', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                                            <span style={{ color: 'var(--success-text)', fontWeight: 'bold', fontSize: '0.95rem' }}>HackerRank</span>
+                                            <span style={{ background: 'var(--success-bg)', color: 'var(--success-text)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
                                                 +{studentProfile.hackerrank_solved_month || 0} this mo
                                             </span>
                                         </div>
-                                        <div style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: '600' }}>
-                                            {studentProfile.hackerrank_handle ? `@${studentProfile.hackerrank_handle}` : <span style={{ color: '#94a3b8' }}>Not linked</span>}
+                                        <div style={{ color: 'var(--text-primary)', fontSize: '0.95rem', fontWeight: '600' }}>
+                                            {studentProfile.hackerrank_handle ? `@${studentProfile.hackerrank_handle}` : <span style={{ color: 'var(--text-muted)' }}>Not linked</span>}
                                         </div>
-                                        <div style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '6px' }}>
-                                            Score: <strong style={{ color: '#334155' }}>{studentProfile.hackerrank_score || 0}</strong>
+                                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '6px' }}>
+                                            Score: <strong style={{ color: 'var(--text-secondary)' }}>{studentProfile.hackerrank_score || 0}</strong>
                                         </div>
                                     </div>
 
                                     {/* 5. AtCoder */}
-                                    <div style={{ background: '#ffffff', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <div style={{ background: 'var(--panel-bg)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <span style={{ color: '#b45309', fontWeight: 'bold', fontSize: '0.95rem' }}>AtCoder</span>
-                                            <span style={{ background: 'rgba(167, 139, 250, 0.15)', color: '#b45309', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
+                                            <span style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.95rem' }}>AtCoder</span>
+                                            <span style={{ background: 'var(--warning-bg)', color: 'var(--accent)', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 'bold' }}>
                                                 +{studentProfile.atcoder_solved_month || 0} this mo
                                             </span>
                                         </div>
-                                        <div style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: '600' }}>
-                                            {studentProfile.atcoder_handle ? `@${studentProfile.atcoder_handle}` : <span style={{ color: '#94a3b8' }}>Not linked</span>}
+                                        <div style={{ color: 'var(--text-primary)', fontSize: '0.95rem', fontWeight: '600' }}>
+                                            {studentProfile.atcoder_handle ? `@${studentProfile.atcoder_handle}` : <span style={{ color: 'var(--text-muted)' }}>Not linked</span>}
                                         </div>
-                                        <div style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '6px' }}>
-                                            Rating: <strong style={{ color: '#334155' }}>{studentProfile.atcoder_rating || 0}</strong>
+                                        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '6px' }}>
+                                            Rating: <strong style={{ color: 'var(--text-secondary)' }}>{studentProfile.atcoder_rating || 0}</strong>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 /* Edit Mode: Coding Platform Inputs with Live Total Recalculation */
                                 <div>
-                                    <div style={{ background: 'rgba(15, 118, 110, 0.1)', border: '1px dashed #14b8a6', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', color: '#5eead4', fontSize: '0.85rem' }}>
-                                        💡 <strong>Live Dynamic Calculator:</strong> Modify the "Problems Solved This Month" values below. The total sum updates instantly and will be saved to your master database profile for all coordinators, mentors, and departments to see!
+                                    <div style={{ background: 'var(--primary-light)', border: '1px dashed var(--primary)', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', color: 'var(--primary)', fontSize: '0.85rem' }}>
+                                        <strong>Live Dynamic Calculator:</strong> Modify the "Problems Solved This Month" values below. The total sum updates instantly and will be saved to your master database profile for all coordinators, mentors, and departments to see!
                                     </div>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
                                         {/* LeetCode Edit */}
-                                        <div style={{ background: '#ffffff', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                            <h5 style={{ color: '#b45309', fontSize: '0.9rem', marginBottom: '10px' }}>LeetCode Profile</h5>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Username Handle</label>
+                                        <div style={{ background: 'var(--panel-bg)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                            <h5 style={{ color: 'var(--accent)', fontSize: '0.9rem', marginBottom: '10px' }}>LeetCode Profile</h5>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Username Handle</label>
                                             <input
                                                 type="text"
                                                 value={profileFormData.leetcode_handle || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, leetcode_handle: e.target.value }))}
                                                 placeholder="e.g. alex_coder"
-                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem', marginBottom: '8px' }}
+                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem', marginBottom: '8px' }}
                                             />
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Solved This Month 🔥</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Solved This Month</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.leetcode_solved_month !== undefined ? profileFormData.leetcode_solved_month : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, leetcode_solved_month: e.target.value }))}
                                                         placeholder="0"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0891b2', fontWeight: 'bold', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Total Solved</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Total Solved</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.leetcode_total_solved !== undefined ? profileFormData.leetcode_total_solved : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, leetcode_total_solved: e.target.value }))}
                                                         placeholder="0"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Codeforces Edit */}
-                                        <div style={{ background: '#ffffff', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                            <h5 style={{ color: '#0891b2', fontSize: '0.9rem', marginBottom: '10px' }}>Codeforces Profile</h5>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Username Handle</label>
+                                        <div style={{ background: 'var(--panel-bg)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                            <h5 style={{ color: 'var(--primary)', fontSize: '0.9rem', marginBottom: '10px' }}>Codeforces Profile</h5>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Username Handle</label>
                                             <input
                                                 type="text"
                                                 value={profileFormData.codeforces_handle || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, codeforces_handle: e.target.value }))}
                                                 placeholder="e.g. alex_cf"
-                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem', marginBottom: '8px' }}
+                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem', marginBottom: '8px' }}
                                             />
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Solved This Month 🔥</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Solved This Month</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.codeforces_solved_month !== undefined ? profileFormData.codeforces_solved_month : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, codeforces_solved_month: e.target.value }))}
                                                         placeholder="0"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0891b2', fontWeight: 'bold', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Rating</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Rating</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.codeforces_rating !== undefined ? profileFormData.codeforces_rating : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, codeforces_rating: e.target.value }))}
                                                         placeholder="1200"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* CodeChef Edit */}
-                                        <div style={{ background: '#ffffff', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                            <h5 style={{ color: '#ea580c', fontSize: '0.9rem', marginBottom: '10px' }}>CodeChef Profile</h5>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Username Handle</label>
+                                        <div style={{ background: 'var(--panel-bg)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                            <h5 style={{ color: 'var(--accent)', fontSize: '0.9rem', marginBottom: '10px' }}>CodeChef Profile</h5>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Username Handle</label>
                                             <input
                                                 type="text"
                                                 value={profileFormData.codechef_handle || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, codechef_handle: e.target.value }))}
                                                 placeholder="e.g. alex_cc"
-                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem', marginBottom: '8px' }}
+                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem', marginBottom: '8px' }}
                                             />
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Solved This Month 🔥</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Solved This Month</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.codechef_solved_month !== undefined ? profileFormData.codechef_solved_month : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, codechef_solved_month: e.target.value }))}
                                                         placeholder="0"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0891b2', fontWeight: 'bold', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Stars / Tier</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Stars / Tier</label>
                                                     <input
                                                         type="text"
                                                         value={profileFormData.codechef_stars || ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, codechef_stars: e.target.value }))}
                                                         placeholder="e.g. 3-Star"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* HackerRank Edit */}
-                                        <div style={{ background: '#ffffff', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                            <h5 style={{ color: '#059669', fontSize: '0.9rem', marginBottom: '10px' }}>HackerRank Profile</h5>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Username Handle</label>
+                                        <div style={{ background: 'var(--panel-bg)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                            <h5 style={{ color: 'var(--success-text)', fontSize: '0.9rem', marginBottom: '10px' }}>HackerRank Profile</h5>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Username Handle</label>
                                             <input
                                                 type="text"
                                                 value={profileFormData.hackerrank_handle || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, hackerrank_handle: e.target.value }))}
                                                 placeholder="e.g. alex_hr"
-                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem', marginBottom: '8px' }}
+                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem', marginBottom: '8px' }}
                                             />
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Solved This Month 🔥</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Solved This Month</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.hackerrank_solved_month !== undefined ? profileFormData.hackerrank_solved_month : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, hackerrank_solved_month: e.target.value }))}
                                                         placeholder="0"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0891b2', fontWeight: 'bold', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Score / Badges</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Score / Badges</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.hackerrank_score !== undefined ? profileFormData.hackerrank_score : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, hackerrank_score: e.target.value }))}
                                                         placeholder="450"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* AtCoder Edit */}
-                                        <div style={{ background: '#ffffff', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                            <h5 style={{ color: '#b45309', fontSize: '0.9rem', marginBottom: '10px' }}>AtCoder Profile</h5>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Username Handle</label>
+                                        <div style={{ background: 'var(--panel-bg)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                            <h5 style={{ color: 'var(--accent)', fontSize: '0.9rem', marginBottom: '10px' }}>AtCoder Profile</h5>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Username Handle</label>
                                             <input
                                                 type="text"
                                                 value={profileFormData.atcoder_handle || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, atcoder_handle: e.target.value }))}
                                                 placeholder="e.g. alex_atc"
-                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem', marginBottom: '8px' }}
+                                                style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem', marginBottom: '8px' }}
                                             />
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Solved This Month 🔥</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Solved This Month</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.atcoder_solved_month !== undefined ? profileFormData.atcoder_solved_month : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, atcoder_solved_month: e.target.value }))}
                                                         placeholder="0"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0891b2', fontWeight: 'bold', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Rating</label>
+                                                    <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>Rating</label>
                                                     <input
                                                         type="number"
                                                         min="0"
                                                         value={profileFormData.atcoder_rating !== undefined ? profileFormData.atcoder_rating : ''}
                                                         onChange={(e) => setProfileFormData(prev => ({ ...prev, atcoder_rating: e.target.value }))}
                                                         placeholder="800"
-                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                        style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                                     />
                                                 </div>
                                             </div>
@@ -1067,8 +1074,8 @@ function StudentDashboard({ user, onLogout }) {
                         {/* ============================================================== */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
                             {/* Personal & Credential Details Card */}
-                            <div style={{ background: '#ffffff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                <h4 style={{ color: '#0f766e', fontSize: '0.95rem', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <h4 style={{ color: 'var(--primary)', fontSize: '0.95rem', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
                                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                         <circle cx="12" cy="7" r="4"></circle>
@@ -1077,41 +1084,41 @@ function StudentDashboard({ user, onLogout }) {
                                 </h4>
 
                                 {!isEditingProfile ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: '#334155', fontSize: '0.88rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ color: '#94a3b8' }}>Full Name</span>
-                                            <strong style={{ color: '#0f172a' }}>{studentProfile.name}</strong>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                                            <span style={{ color: 'var(--text-muted)' }}>Full Name</span>
+                                            <strong style={{ color: 'var(--text-primary)' }}>{studentProfile.name}</strong>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ color: '#94a3b8' }}>Phone Contact</span>
-                                            <strong style={{ color: studentProfile.phone ? '#0891b2' : '#64748b' }}>{studentProfile.phone || 'Not provided'}</strong>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                                            <span style={{ color: 'var(--text-muted)' }}>Phone Contact</span>
+                                            <strong style={{ color: studentProfile.phone ? 'var(--primary)' : 'var(--text-secondary)' }}>{studentProfile.phone || 'Not provided'}</strong>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ color: '#94a3b8' }}>Register Number</span>
-                                            <strong style={{ color: '#0f766e' }}>{studentProfile.register_number || 'N/A'}</strong>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                                            <span style={{ color: 'var(--text-muted)' }}>Register Number</span>
+                                            <strong style={{ color: 'var(--primary)' }}>{studentProfile.register_number || 'N/A'}</strong>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ color: '#94a3b8' }}>Student Email</span>
-                                            <strong style={{ color: '#0f172a' }}>{studentProfile.email || user.gmail}</strong>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                                            <span style={{ color: 'var(--text-muted)' }}>Student Email</span>
+                                            <strong style={{ color: 'var(--text-primary)' }}>{studentProfile.email || user.gmail}</strong>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ color: '#94a3b8' }}>Department & Year</span>
-                                            <strong style={{ color: '#0f172a' }}>{studentProfile.department || 'Not Assigned'} &bull; {studentProfile.year || '4th Year'}</strong>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                                            <span style={{ color: 'var(--text-muted)' }}>Department & Year</span>
+                                            <strong style={{ color: 'var(--text-primary)' }}>{studentProfile.department || 'Not Assigned'} &bull; {studentProfile.year || '4th Year'}</strong>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '4px' }}>
-                                            <span style={{ color: '#94a3b8' }}>Social Profiles</span>
+                                            <span style={{ color: 'var(--text-muted)' }}>Social Profiles</span>
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 {studentProfile.linkedin_url && (
-                                                    <a href={studentProfile.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: '#0f766e', fontSize: '0.8rem', textDecoration: 'none' }}>LinkedIn &rarr;</a>
+                                                    <a href={studentProfile.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontSize: '0.8rem', textDecoration: 'none' }}>LinkedIn &rarr;</a>
                                                 )}
                                                 {studentProfile.github_url && (
-                                                    <a href={studentProfile.github_url} target="_blank" rel="noopener noreferrer" style={{ color: '#0891b2', fontSize: '0.8rem', textDecoration: 'none' }}>GitHub &rarr;</a>
+                                                    <a href={studentProfile.github_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontSize: '0.8rem', textDecoration: 'none' }}>GitHub &rarr;</a>
                                                 )}
                                                 {studentProfile.portfolio_url && (
-                                                    <a href={studentProfile.portfolio_url} target="_blank" rel="noopener noreferrer" style={{ color: '#059669', fontSize: '0.8rem', textDecoration: 'none' }}>Portfolio &rarr;</a>
+                                                    <a href={studentProfile.portfolio_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--success-text)', fontSize: '0.8rem', textDecoration: 'none' }}>Portfolio &rarr;</a>
                                                 )}
                                                 {!studentProfile.linkedin_url && !studentProfile.github_url && !studentProfile.portfolio_url && (
-                                                    <span style={{ color: '#64748b', fontSize: '0.8rem' }}>None added</span>
+                                                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>None added</span>
                                                 )}
                                             </div>
                                         </div>
@@ -1119,63 +1126,63 @@ function StudentDashboard({ user, onLogout }) {
                                 ) : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                         <div>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Full Name</label>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>Full Name</label>
                                             <input
                                                 type="text"
                                                 value={profileFormData.name || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, name: e.target.value }))}
-                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                             />
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Phone Contact</label>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>Phone Contact</label>
                                             <input
                                                 type="text"
                                                 value={profileFormData.phone || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, phone: e.target.value }))}
                                                 placeholder="+91 98765 43210"
-                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                             />
                                         </div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                             <div>
-                                                <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px' }}>
+                                                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '3px' }}>
                                                     <span>Department</span>
-                                                    <span style={{ fontSize: '0.68rem', color: '#0891b2' }}>🔒 Institutional</span>
+                                                    <span style={{ fontSize: '0.68rem', color: 'var(--primary)' }}>Institutional</span>
                                                 </label>
-                                                <div style={{ padding: '7px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#64748b', fontSize: '0.85rem', fontWeight: 600 }}>
+                                                <div style={{ padding: '7px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600 }}>
                                                     {studentProfile.department || 'CSE'}
                                                 </div>
                                             </div>
                                             <div>
-                                                <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Academic Year</label>
+                                                <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>Academic Year</label>
                                                 <input
                                                     type="text"
                                                     value={profileFormData.year || ''}
                                                     onChange={(e) => setProfileFormData(prev => ({ ...prev, year: e.target.value }))}
                                                     placeholder="4th Year"
-                                                    style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                    style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>LinkedIn URL</label>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>LinkedIn URL</label>
                                             <input
                                                 type="url"
                                                 value={profileFormData.linkedin_url || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, linkedin_url: e.target.value }))}
                                                 placeholder="https://linkedin.com/in/..."
-                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                             />
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>GitHub Profile URL</label>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>GitHub Profile URL</label>
                                             <input
                                                 type="url"
                                                 value={profileFormData.github_url || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, github_url: e.target.value }))}
                                                 placeholder="https://github.com/..."
-                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                             />
                                         </div>
                                     </div>
@@ -1183,8 +1190,8 @@ function StudentDashboard({ user, onLogout }) {
                             </div>
 
                             {/* Academic Performance Card */}
-                            <div style={{ background: '#ffffff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                <h4 style={{ color: '#0f766e', fontSize: '0.95rem', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <h4 style={{ color: 'var(--primary)', fontSize: '0.95rem', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '16px', height: '16px' }}>
                                         <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
                                         <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
@@ -1193,25 +1200,25 @@ function StudentDashboard({ user, onLogout }) {
                                 </h4>
 
                                 {!isEditingProfile ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: '#334155', fontSize: '0.88rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ color: '#94a3b8' }}>Cumulative CGPA</span>
-                                            <strong style={{ color: '#059669', fontSize: '1.05rem' }}>{studentProfile.cgpa !== null && studentProfile.cgpa !== undefined ? `${studentProfile.cgpa} / 10.0` : 'N/A'}</strong>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                                            <span style={{ color: 'var(--text-muted)' }}>Cumulative CGPA</span>
+                                            <strong style={{ color: 'var(--success-text)', fontSize: '1.05rem' }}>{studentProfile.cgpa !== null && studentProfile.cgpa !== undefined ? `${studentProfile.cgpa} / 10.0` : 'N/A'}</strong>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ color: '#94a3b8' }}>10th Percentage</span>
-                                            <strong style={{ color: '#0f172a' }}>{studentProfile.tenth !== null && studentProfile.tenth !== undefined ? `${studentProfile.tenth}%` : 'N/A'}</strong>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                                            <span style={{ color: 'var(--text-muted)' }}>10th Percentage</span>
+                                            <strong style={{ color: 'var(--text-primary)' }}>{studentProfile.tenth !== null && studentProfile.tenth !== undefined ? `${studentProfile.tenth}%` : 'N/A'}</strong>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span style={{ color: '#94a3b8' }}>12th / Diploma %</span>
-                                            <strong style={{ color: '#0f172a' }}>{studentProfile.twelfth !== null && studentProfile.twelfth !== undefined ? `${studentProfile.twelfth}%` : 'N/A'}</strong>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>
+                                            <span style={{ color: 'var(--text-muted)' }}>12th / Diploma %</span>
+                                            <strong style={{ color: 'var(--text-primary)' }}>{studentProfile.twelfth !== null && studentProfile.twelfth !== undefined ? `${studentProfile.twelfth}%` : 'N/A'}</strong>
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ color: '#94a3b8' }}>Placement Status</span>
+                                            <span style={{ color: 'var(--text-muted)' }}>Placement Status</span>
                                             <span style={{
-                                                background: placedResult ? 'rgba(16, 185, 129, 0.2)' : myApplications.length > 0 ? 'rgba(20, 184, 166, 0.2)' : 'rgba(148, 163, 184, 0.2)',
-                                                color: placedResult ? '#059669' : myApplications.length > 0 ? '#0f766e' : '#94a3b8',
-                                                border: `1px solid ${placedResult ? 'rgba(16, 185, 129, 0.4)' : myApplications.length > 0 ? 'rgba(20, 184, 166, 0.4)' : 'rgba(148, 163, 184, 0.4)'}`,
+                                                background: placedResult ? 'var(--success-bg)' : myApplications.length > 0 ? 'var(--primary-light)' : 'var(--panel-hover)',
+                                                color: placedResult ? 'var(--success-text)' : myApplications.length > 0 ? 'var(--primary)' : 'var(--text-muted)',
+                                                border: `1px solid ${placedResult ? 'var(--success-border)' : myApplications.length > 0 ? 'var(--primary-subtle)' : 'var(--border-color)'}`,
                                                 fontSize: '0.8rem',
                                                 padding: '2px 10px',
                                                 borderRadius: '12px',
@@ -1223,47 +1230,47 @@ function StudentDashboard({ user, onLogout }) {
                                     </div>
                                 ) : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        <div style={{ background: '#ffffff', padding: '12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                        <div style={{ background: 'var(--panel-bg)', padding: '12px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Cumulative CGPA</span>
-                                                <span style={{ fontSize: '0.68rem', color: '#0891b2', background: 'rgba(56, 189, 248, 0.15)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.3)', fontWeight: 'bold' }}>
-                                                    🔒 Verified by Placement Cell
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Cumulative CGPA</span>
+                                                <span style={{ fontSize: '0.68rem', color: 'var(--primary)', background: 'var(--primary-light)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--primary-subtle)', fontWeight: 'bold' }}>
+                                                    Verified by Placement Cell
                                                 </span>
                                             </div>
-                                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#059669' }}>
+                                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--success-text)' }}>
                                                 {studentProfile.cgpa !== null && studentProfile.cgpa !== undefined ? `${studentProfile.cgpa} / 10.0` : 'N/A'}
                                             </div>
-                                            <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: '#94a3b8' }}>
+                                            <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                                                 Official CGPA auto-updated via Placement Cell Excel Roster. Non-editable by students.
                                             </p>
                                         </div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                                            <div style={{ background: '#ffffff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                            <div style={{ background: 'var(--panel-bg)', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                                                    <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>10th Marks</span>
-                                                    <span style={{ fontSize: '0.65rem', color: '#0891b2' }}>🔒 Verified</span>
+                                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>10th Marks</span>
+                                                    <span style={{ fontSize: '0.65rem', color: 'var(--primary)' }}>Verified</span>
                                                 </div>
-                                                <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{studentProfile.tenth !== null && studentProfile.tenth !== undefined ? `${studentProfile.tenth}%` : 'N/A'}</strong>
+                                                <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{studentProfile.tenth !== null && studentProfile.tenth !== undefined ? `${studentProfile.tenth}%` : 'N/A'}</strong>
                                             </div>
-                                            <div style={{ background: '#ffffff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                            <div style={{ background: 'var(--panel-bg)', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                                                    <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>12th / Diploma</span>
-                                                    <span style={{ fontSize: '0.65rem', color: '#0891b2' }}>🔒 Verified</span>
+                                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>12th / Diploma</span>
+                                                    <span style={{ fontSize: '0.65rem', color: 'var(--primary)' }}>Verified</span>
                                                 </div>
-                                                <strong style={{ color: '#0f172a', fontSize: '0.95rem' }}>{studentProfile.twelfth !== null && studentProfile.twelfth !== undefined ? `${studentProfile.twelfth}%` : 'N/A'}</strong>
+                                                <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{studentProfile.twelfth !== null && studentProfile.twelfth !== undefined ? `${studentProfile.twelfth}%` : 'N/A'}</strong>
                                             </div>
                                         </div>
-                                        <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(20, 184, 166, 0.12)', border: '1px solid rgba(20, 184, 166, 0.3)', fontSize: '0.74rem', color: '#5eead4', lineHeight: '1.4' }}>
-                                            🔒 <strong>Institutional Academic Records:</strong> CGPA, marks, and branch are verified official data imported by the Placement Coordinator.
+                                        <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'var(--primary-light)', border: '1px solid var(--primary-subtle)', fontSize: '0.74rem', color: 'var(--primary)', lineHeight: '1.4' }}>
+                                            <strong>Institutional Academic Records:</strong> CGPA, marks, and branch are verified official data imported by the Placement Coordinator.
                                         </div>
                                         <div>
-                                            <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '3px' }}>Technical Skills (comma-separated)</label>
+                                            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>Technical Skills (comma-separated)</label>
                                             <input
                                                 type="text"
                                                 value={profileFormData.skills || ''}
                                                 onChange={(e) => setProfileFormData(prev => ({ ...prev, skills: e.target.value }))}
                                                 placeholder="Python, React, TypeScript, SQL..."
-                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: '#ffffff', border: '1px solid #e2e8f0', color: '#0f172a', fontSize: '0.85rem' }}
+                                                style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', background: 'var(--panel-bg)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', fontSize: '0.85rem' }}
                                             />
                                         </div>
                                     </div>
@@ -1276,27 +1283,27 @@ function StudentDashboard({ user, onLogout }) {
                         {/* ============================================================== */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
                             {/* Skillset Badges */}
-                            <div style={{ background: '#ffffff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                <h4 style={{ color: '#0f766e', fontSize: '0.95rem', marginBottom: '12px' }}>Technical Skillset & Stack</h4>
+                            <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <h4 style={{ color: 'var(--primary)', fontSize: '0.95rem', marginBottom: '12px' }}>Technical Skillset & Stack</h4>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                                     {(Array.isArray(studentProfile.skills) ? studentProfile.skills : (studentProfile.skills || '').split(',')).map((sk, idx) => (
-                                        <span key={idx} style={{ background: 'rgba(20, 184, 166, 0.15)', color: '#0f766e', border: '1px solid rgba(20, 184, 166, 0.3)', padding: '5px 12px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '500' }}>
+                                        <span key={idx} style={{ background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary-subtle)', padding: '5px 12px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '500' }}>
                                             {sk.trim()}
                                         </span>
                                     ))}
                                     {(!studentProfile.skills || studentProfile.skills.length === 0) && (
-                                        <span style={{ color: '#64748b', fontSize: '0.85rem' }}>No skills listed yet. Click edit to add your stack.</span>
+                                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>No skills listed yet. Click edit to add your stack.</span>
                                     )}
                                 </div>
                             </div>
 
                             {/* Resume Document Upload & Download */}
-                            <div style={{ background: '#ffffff', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                                <h4 style={{ color: '#0f766e', fontSize: '0.95rem', marginBottom: '12px' }}>Resume Document Manager</h4>
+                            <div style={{ background: 'var(--panel-bg)', padding: '20px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <h4 style={{ color: 'var(--primary)', fontSize: '0.95rem', marginBottom: '12px' }}>Resume Document Manager</h4>
                                 
                                 {studentProfile.resume_url ? (
-                                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px 16px', borderRadius: '8px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#059669', fontSize: '0.85rem' }}>
+                                    <div style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '12px 16px', borderRadius: '8px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--success-text)', fontSize: '0.85rem' }}>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px' }}>
                                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                                 <polyline points="14 2 14 8 20 8"></polyline>
@@ -1310,8 +1317,8 @@ function StudentDashboard({ user, onLogout }) {
                                             style={{
                                                 padding: '5px 12px',
                                                 borderRadius: '6px',
-                                                background: '#10b981',
-                                                color: '#ffffff',
+                                                background: 'var(--success-text)',
+                                                color: 'var(--panel-bg)',
                                                 textDecoration: 'none',
                                                 fontSize: '0.8rem',
                                                 fontWeight: 'bold',
@@ -1324,7 +1331,7 @@ function StudentDashboard({ user, onLogout }) {
                                         </a>
                                     </div>
                                 ) : (
-                                    <div style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '14px' }}>
+                                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '14px' }}>
                                         No resume uploaded yet. Upload your PDF or Word resume so placement coordinators and mentors can review it anytime.
                                     </div>
                                 )}
@@ -1335,13 +1342,13 @@ function StudentDashboard({ user, onLogout }) {
                                             type="file"
                                             accept=".pdf,.doc,.docx"
                                             onChange={(e) => setResumeFile(e.target.files[0])}
-                                            style={{ color: '#334155', fontSize: '0.85rem' }}
+                                            style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}
                                         />
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={uploadingResume || !resumeFile}
-                                        style={{ padding: '8px 16px', borderRadius: '6px', background: '#0f766e', color: '#0f172a', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}
+                                        style={{ padding: '8px 16px', borderRadius: '6px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' }}
                                     >
                                         {uploadingResume ? 'Uploading Resume...' : 'Upload Updated Resume'}
                                     </button>
