@@ -88,8 +88,10 @@ async def upload_student_roster(file: UploadFile = File(...)):
         upload_service.record_failure("Student Roster", file.filename, exc)
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     processed = [db.upsert_student_roster_record(item["register_number"], item["name"], item["email"], item["department"], item["cgpa"], item.get("tenth_percentage"), item.get("twelfth_percentage"), item.get("skills", "")) for item in records]
+    created = sum(1 for p in processed if p.get("action") == "Created")
+    updated = sum(1 for p in processed if p.get("action") == "Updated")
     db.record_upload_log("Student Academic Roster", file.filename, len(records) + skipped_count, len(processed), skipped_count)
-    return {"success": True, "message": f"Successfully imported {len(processed)} student academic profiles.", "total_rows": len(records) + skipped_count, "imported_count": len(processed), "skipped_count": skipped_count, "students": processed}
+    return {"success": True, "message": f"Successfully imported {len(processed)} student academic profiles.", "total_rows": len(records) + skipped_count, "imported_count": len(processed), "created_count": created, "updated_count": updated, "skipped_count": skipped_count, "students": processed}
 
 
 async def upload_company_drives(file: UploadFile = File(...)):

@@ -22,23 +22,6 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[str] = mapped_column(String, default=timestamp_value)
     department: Mapped[str] = mapped_column(String, default="CSE")
-    year: Mapped[str] = mapped_column(String, default="4th Year")
-    phone: Mapped[str | None] = mapped_column(String)
-    linkedin_url: Mapped[str | None] = mapped_column(String)
-    github_url: Mapped[str | None] = mapped_column(String)
-    portfolio_url: Mapped[str | None] = mapped_column(String)
-    resume_filename: Mapped[str | None] = mapped_column(String)
-    resume_url: Mapped[str | None] = mapped_column(String)
-    leetcode_handle: Mapped[str | None] = mapped_column(String)
-    leetcode_solved_month: Mapped[int] = mapped_column(Integer, default=0)
-    leetcode_total_solved: Mapped[int] = mapped_column(Integer, default=0)
-    codeforces_handle: Mapped[str | None] = mapped_column(String)
-    codeforces_solved_month: Mapped[int] = mapped_column(Integer, default=0)
-    codeforces_total_solved: Mapped[int] = mapped_column(Integer, default=0)
-    hackerrank_handle: Mapped[str | None] = mapped_column(String)
-    hackerrank_solved_month: Mapped[int] = mapped_column(Integer, default=0)
-    hackerrank_total_solved: Mapped[int] = mapped_column(Integer, default=0)
-    total_coding_score: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class Drive(Base):
@@ -134,6 +117,19 @@ class InterventionAction(Base):
     updated_at: Mapped[str] = mapped_column(String, default=timestamp_value, onupdate=timestamp_value)
 
 
+class Round(Base):
+    __tablename__ = "rounds"
+    __table_args__ = (UniqueConstraint("drive_id", "round_number"),)
+
+    round_id: Mapped[str] = mapped_column(String, primary_key=True)
+    drive_id: Mapped[str] = mapped_column(String, nullable=False)
+    round_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    round_name: Mapped[str] = mapped_column(String, nullable=False)
+    round_type: Mapped[str] = mapped_column(String, default="TECHNICAL")
+    description: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(String, default=timestamp_value)
+
+
 class StudentRoster(Base):
     __tablename__ = "students_roster"
 
@@ -147,7 +143,30 @@ class StudentRoster(Base):
     twelfth_percentage: Mapped[float | None] = mapped_column(Float)
     skills: Mapped[str | None] = mapped_column(Text)
     year: Mapped[str] = mapped_column(String, default="4th Year")
+    phone: Mapped[str | None] = mapped_column(String)
+    linkedin_url: Mapped[str | None] = mapped_column(String)
+    github_url: Mapped[str | None] = mapped_column(String)
+    portfolio_url: Mapped[str | None] = mapped_column(String)
+    resume_filename: Mapped[str | None] = mapped_column(String)
+    resume_url: Mapped[str | None] = mapped_column(String)
+    leetcode_handle: Mapped[str | None] = mapped_column(String)
+    leetcode_solved_month: Mapped[int] = mapped_column(Integer, default=0)
+    leetcode_total_solved: Mapped[int] = mapped_column(Integer, default=0)
+    codeforces_handle: Mapped[str | None] = mapped_column(String)
+    codeforces_solved_month: Mapped[int] = mapped_column(Integer, default=0)
+    codeforces_rating: Mapped[int] = mapped_column(Integer, default=0)
+    codechef_handle: Mapped[str | None] = mapped_column(String)
+    codechef_solved_month: Mapped[int] = mapped_column(Integer, default=0)
+    codechef_stars: Mapped[str | None] = mapped_column(String)
+    hackerrank_handle: Mapped[str | None] = mapped_column(String)
+    hackerrank_solved_month: Mapped[int] = mapped_column(Integer, default=0)
+    hackerrank_score: Mapped[int] = mapped_column(Integer, default=0)
+    atcoder_handle: Mapped[str | None] = mapped_column(String)
+    atcoder_solved_month: Mapped[int] = mapped_column(Integer, default=0)
+    atcoder_rating: Mapped[int] = mapped_column(Integer, default=0)
+    monthly_total_solved: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[str] = mapped_column(String, default=timestamp_value)
+    updated_at: Mapped[str | None] = mapped_column(String, default=timestamp_value, onupdate=timestamp_value)
 
 
 class UploadLog(Base):
