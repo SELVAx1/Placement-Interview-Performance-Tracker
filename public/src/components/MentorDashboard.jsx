@@ -51,23 +51,15 @@ function MentorDashboard({ user, onLogout }) {
                     setInterventions([]);
                 }
             } else {
-                // Fallback demo dataset if API not fully initialized
-                const demoMentees = [
-                    { student_id: 'st-101', name: 'Arun Kumar', register_number: '312321104001', department: 'CSE', cgpa: 8.4, tenth: 92, twelfth: 89, placement_marks: 78, status: 'Active', phone: '9876543210', email: 'arunkumar@stjosephs.ac.in', skills: ['Python', 'React', 'Data Structures'] },
-                    { student_id: 'st-102', name: 'Bhavani S', register_number: '312321104015', department: 'ECE', cgpa: 7.9, tenth: 88, twelfth: 85, placement_marks: 65, status: 'Active', phone: '9876543211', email: 'bhavanis@stjosephs.ac.in', skills: ['C++', 'Embedded Systems', 'SQL'] },
-                    { student_id: 'st-103', name: 'Deepak Raj', register_number: '312321205008', department: 'IT', cgpa: 8.8, tenth: 95, twelfth: 93, placement_marks: 88, status: 'Placed', company: 'Goldman Sachs', ctc: 22.0, job_role: 'Analyst', phone: '9876543212', email: 'deepakraj@stjosephs.ac.in', skills: ['Java', 'Spring Boot', 'System Design'] },
-                    { student_id: 'st-104', name: 'Divya M', register_number: '312321104032', department: 'CSE', cgpa: 6.8, tenth: 81, twelfth: 79, placement_marks: 52, status: 'At Risk', phone: '9876543213', email: 'divyam@stjosephs.ac.in', skills: ['HTML', 'CSS', 'JavaScript'] },
-                    { student_id: 'st-105', name: 'Elango P', register_number: '312321205021', department: 'IT', cgpa: 9.1, tenth: 96, twelfth: 94, placement_marks: 92, status: 'Placed', company: 'Microsoft', ctc: 18.5, job_role: 'Software Engineer', phone: '9876543214', email: 'elangop@stjosephs.ac.in', skills: ['Python', 'Machine Learning', 'Docker'] }
-                ];
-                setMentees(demoMentees);
-                setPlacedMentees(demoMentees.filter(m => m.status === 'Placed'));
+                setMentees([]);
+                setPlacedMentees([]);
                 setInterventions([]);
                 setMetrics({
-                    total_mentees: 5,
-                    placed_count: 2,
-                    placement_rate: 40.0,
-                    active_interventions: 1,
-                    at_risk_count: 1
+                    total_mentees: 0,
+                    placed_count: 0,
+                    placement_rate: 0,
+                    active_interventions: 0,
+                    at_risk_count: 0
                 });
             }
         } catch (e) {
@@ -102,9 +94,7 @@ function MentorDashboard({ user, onLogout }) {
                 const data = await res.json();
                 setStudentNotes(data.notes || []);
             } else {
-                setStudentNotes([
-                    { note_id: 'n-1', content: 'Initial counseling done. Student needs improvement in Data Structures.', created_at: '2026-09-20 10:30' }
-                ]);
+                setStudentNotes([]);
             }
         } catch (e) {
             setStudentNotes([]);
@@ -247,14 +237,14 @@ function MentorDashboard({ user, onLogout }) {
             {/* Top Navbar */}
             <header className="desktop-navbar">
                 <div className="nav-left">
-                    <div className="brand-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 100 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
+                    <div className="brand-icon" title="Placement Intervention System">
+                        <img src="/static/icon.png" alt="Placement Intervention System" />
                     </div>
-                    <div>
-                        <h1 className="brand-title">Mentor Workspace</h1>
-                        <p className="brand-subtitle">Student Performance Tracking & Mentorship Management</p>
+                    <div className="brand-text">
+                        <span className="portal-name">Placement Intervention System</span>
+                        <span className="portal-sub">
+                            Mentor Workspace &bull; <span className="brand-tagline-badge">Guide &bull; Prepare</span>
+                        </span>
                     </div>
                 </div>
 
@@ -429,6 +419,7 @@ function MentorDashboard({ user, onLogout }) {
                                         <th style={{ padding: '12px' }}>STUDENT NAME</th>
                                         <th style={{ padding: '12px' }}>DEPT</th>
                                         <th style={{ padding: '12px' }}>CGPA</th>
+                                        <th style={{ padding: '12px' }}>MONTHLY SOLVED</th>
                                         <th style={{ padding: '12px' }}>PLACEMENT MARKS</th>
                                         <th style={{ padding: '12px' }}>STATUS</th>
                                         <th style={{ padding: '12px', textAlign: 'right' }}>ACTIONS</th>
@@ -438,9 +429,32 @@ function MentorDashboard({ user, onLogout }) {
                                     {filteredMentees.map(m => (
                                         <tr key={m.student_id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: '#f8fafc' }}>
                                             <td style={{ padding: '12px', fontFamily: 'monospace', color: '#94a3b8' }}>{m.register_number}</td>
-                                            <td style={{ padding: '12px', fontWeight: '600' }}>{m.name}</td>
+                                            <td style={{ padding: '12px' }}>
+                                                <div style={{ fontWeight: '600' }}>{m.name}</div>
+                                                {m.resume_url && (
+                                                    <a href={m.resume_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.72rem', color: '#60a5fa', textDecoration: 'none' }}>
+                                                        📄 Resume
+                                                    </a>
+                                                )}
+                                            </td>
                                             <td style={{ padding: '12px' }}>{m.department}</td>
                                             <td style={{ padding: '12px', fontWeight: '600' }}>{m.cgpa}</td>
+                                            <td style={{ padding: '12px' }}>
+                                                <span style={{
+                                                    padding: '3px 8px',
+                                                    borderRadius: '6px',
+                                                    background: 'rgba(249,115,22,0.15)',
+                                                    color: '#fdba74',
+                                                    fontWeight: '700',
+                                                    fontSize: '0.8rem',
+                                                    border: '1px solid rgba(249,115,22,0.3)',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}>
+                                                    🔥 {m.monthly_total_solved || 0}
+                                                </span>
+                                            </td>
                                             <td style={{ padding: '12px' }}>{m.placement_marks || 'N/A'}</td>
                                             <td style={{ padding: '12px' }}>
                                                 <span style={{
@@ -521,21 +535,21 @@ function MentorDashboard({ user, onLogout }) {
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
                             <div style={{ background: '#0f172a', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
-                                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Intervention Resolution Rate</h4>
-                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#34d399', margin: '12px 0' }}>85.0%</div>
-                                <p style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>Mentees showing mark improvement after intervention steps.</p>
+                                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Active Interventions Flagged</h4>
+                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#f59e0b', margin: '12px 0' }}>{interventions.length}</div>
+                                <p style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>Mentees currently enrolled in structured intervention remediation.</p>
                             </div>
 
                             <div style={{ background: '#0f172a', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
-                                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Placement Conversion Target</h4>
-                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#60a5fa', margin: '12px 0' }}>40.0%</div>
-                                <p style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>Placed mentees out of total assigned cohort.</p>
+                                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Placement Conversion Rate</h4>
+                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#60a5fa', margin: '12px 0' }}>{metrics?.placement_rate !== undefined ? `${metrics.placement_rate}%` : '0%'}</div>
+                                <p style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>{metrics?.placed_count || placedMentees.length} placed out of {metrics?.total_mentees || mentees.length} total mentees.</p>
                             </div>
 
                             <div style={{ background: '#0f172a', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
-                                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Primary Risk Focus Area</h4>
-                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#f59e0b', margin: '12px 0' }}>Data Structures & Algorithms</div>
-                                <p style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>Main topic identified in mock interview evaluations.</p>
+                                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Students at Risk</h4>
+                                <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#ef4444', margin: '12px 0' }}>{metrics?.at_risk_count || 0}</div>
+                                <p style={{ color: '#cbd5e1', fontSize: '0.8rem' }}>Students flagged needing interview practice or mentor counseling.</p>
                             </div>
                         </div>
                     </div>
@@ -561,14 +575,152 @@ function MentorDashboard({ user, onLogout }) {
                         </div>
 
                         {/* Student Profile Overview */}
-                        <div style={{ background: '#1e293b', padding: '16px', borderRadius: '8px', marginBottom: '24px' }}>
-                            <h4 style={{ color: '#60a5fa', fontSize: '0.9rem', marginBottom: '10px', textTransform: 'uppercase' }}>Academic & Placement Record</h4>
+                        <div style={{ background: '#1e293b', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                <h4 style={{ color: '#60a5fa', fontSize: '0.9rem', textTransform: 'uppercase', margin: 0 }}>Academic & Personal Dossier</h4>
+                                {selectedStudent.resume_url && (
+                                    <a
+                                        href={selectedStudent.resume_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            background: 'rgba(16, 185, 129, 0.2)',
+                                            color: '#34d399',
+                                            border: '1px solid rgba(16, 185, 129, 0.4)',
+                                            padding: '4px 10px',
+                                            borderRadius: '6px',
+                                            fontSize: '0.78rem',
+                                            fontWeight: '600',
+                                            textDecoration: 'none'
+                                        }}
+                                    >
+                                        📄 View Resume
+                                    </a>
+                                )}
+                            </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85rem', color: '#cbd5e1' }}>
                                 <div>CGPA: <strong style={{ color: '#fff' }}>{selectedStudent.cgpa}</strong></div>
                                 <div>Placement Mark: <strong style={{ color: '#fff' }}>{selectedStudent.placement_marks || 0}</strong></div>
                                 <div>10th Percentage: <strong style={{ color: '#fff' }}>{selectedStudent.tenth}%</strong></div>
                                 <div>12th Percentage: <strong style={{ color: '#fff' }}>{selectedStudent.twelfth}%</strong></div>
-                                <div style={{ gridColumn: 'span 2' }}>Email: <strong style={{ color: '#fff' }}>{selectedStudent.email}</strong></div>
+                                <div>Phone: <strong style={{ color: '#fff' }}>{selectedStudent.phone || 'N/A'}</strong></div>
+                                <div>Email: <strong style={{ color: '#fff' }}>{selectedStudent.email}</strong></div>
+                            </div>
+
+                            {/* Social / Portfolio Links */}
+                            <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.8rem' }}>
+                                {selectedStudent.linkedin_url && (
+                                    <a href={selectedStudent.linkedin_url.startsWith('http') ? selectedStudent.linkedin_url : `https://${selectedStudent.linkedin_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: '600' }}>
+                                        🔗 LinkedIn
+                                    </a>
+                                )}
+                                {selectedStudent.github_url && (
+                                    <a href={selectedStudent.github_url.startsWith('http') ? selectedStudent.github_url : `https://${selectedStudent.github_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#a78bfa', textDecoration: 'none', fontWeight: '600' }}>
+                                        🐙 GitHub
+                                    </a>
+                                )}
+                                {selectedStudent.portfolio_url && (
+                                    <a href={selectedStudent.portfolio_url.startsWith('http') ? selectedStudent.portfolio_url : `https://${selectedStudent.portfolio_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#34d399', textDecoration: 'none', fontWeight: '600' }}>
+                                        🌐 Portfolio
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Competitive Coding Platform & Monthly Solved Activity */}
+                        <div style={{ background: '#1e293b', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+                            <div style={{
+                                background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.2), rgba(249, 115, 22, 0.08))',
+                                border: '1px solid rgba(249, 115, 22, 0.4)',
+                                borderRadius: '6px',
+                                padding: '10px 14px',
+                                marginBottom: '14px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                            }}>
+                                <div>
+                                    <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#fb923c', textTransform: 'uppercase' }}>Competitive Coding Tracker</span>
+                                    <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#fff', marginTop: '2px' }}>
+                                        🔥 {selectedStudent.monthly_total_solved || 0} Solved This Month
+                                    </div>
+                                </div>
+                                <span style={{ background: 'rgba(249, 115, 22, 0.2)', color: '#fdba74', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: '700' }}>
+                                    All Platforms
+                                </span>
+                            </div>
+
+                            {/* 5 Coding Platform Badges */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                                {/* LeetCode */}
+                                <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <strong style={{ color: '#fbbf24', fontSize: '0.78rem' }}>LeetCode</strong>
+                                        {selectedStudent.leetcode_handle && (
+                                            <a href={`https://leetcode.com/u/${selectedStudent.leetcode_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                        )}
+                                    </div>
+                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.leetcode_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                        {selectedStudent.leetcode_solved_month || 0} this mo
+                                    </div>
+                                </div>
+
+                                {/* Codeforces */}
+                                <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <strong style={{ color: '#60a5fa', fontSize: '0.78rem' }}>Codeforces</strong>
+                                        {selectedStudent.codeforces_handle && (
+                                            <a href={`https://codeforces.com/profile/${selectedStudent.codeforces_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                        )}
+                                    </div>
+                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.codeforces_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                        {selectedStudent.codeforces_solved_month || 0} this mo
+                                    </div>
+                                </div>
+
+                                {/* CodeChef */}
+                                <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <strong style={{ color: '#d97706', fontSize: '0.78rem' }}>CodeChef</strong>
+                                        {selectedStudent.codechef_handle && (
+                                            <a href={`https://www.codechef.com/users/${selectedStudent.codechef_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                        )}
+                                    </div>
+                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.codechef_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                        {selectedStudent.codechef_solved_month || 0} this mo
+                                    </div>
+                                </div>
+
+                                {/* HackerRank */}
+                                <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <strong style={{ color: '#10b981', fontSize: '0.78rem' }}>HackerRank</strong>
+                                        {selectedStudent.hackerrank_handle && (
+                                            <a href={`https://www.hackerrank.com/profile/${selectedStudent.hackerrank_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                        )}
+                                    </div>
+                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.hackerrank_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                        {selectedStudent.hackerrank_solved_month || 0} this mo
+                                    </div>
+                                </div>
+
+                                {/* AtCoder */}
+                                <div style={{ background: '#0f172a', padding: '8px 10px', borderRadius: '6px', border: '1px solid #334155' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <strong style={{ color: '#a855f7', fontSize: '0.78rem' }}>AtCoder</strong>
+                                        {selectedStudent.atcoder_handle && (
+                                            <a href={`https://atcoder.jp/users/${selectedStudent.atcoder_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.65rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                        )}
+                                    </div>
+                                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>@{selectedStudent.atcoder_handle || '—'}</div>
+                                    <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: '600', marginTop: '4px' }}>
+                                        {selectedStudent.atcoder_solved_month || 0} this mo
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

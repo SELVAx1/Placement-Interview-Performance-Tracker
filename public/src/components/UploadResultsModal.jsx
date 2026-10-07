@@ -77,9 +77,14 @@ function UploadResultsModal({ isOpen, onClose, drives, initialDriveId, onResults
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-head">
-                    <div>
-                        <h3>Upload Shortlisted Candidates Excel</h3>
-                        <p className="modal-sub">Extracts 'gmail' column — all listed candidates are shortlisted for the next round</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="brand-icon" style={{ width: '40px', height: '40px' }}>
+                            <img src="/static/icon.png" alt="Placement Intervention System" />
+                        </div>
+                        <div>
+                            <h3>Upload Candidate Results & Shortlists</h3>
+                            <p className="modal-sub">Ingest Excel/CSV results, advance rounds, or record final selections</p>
+                        </div>
                     </div>
                     <button type="button" className="modal-close" onClick={onClose}>&times;</button>
                 </div>

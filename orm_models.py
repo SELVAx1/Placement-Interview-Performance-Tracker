@@ -22,6 +22,23 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[str] = mapped_column(String, default=timestamp_value)
     department: Mapped[str] = mapped_column(String, default="CSE")
+    year: Mapped[str] = mapped_column(String, default="4th Year")
+    phone: Mapped[str | None] = mapped_column(String)
+    linkedin_url: Mapped[str | None] = mapped_column(String)
+    github_url: Mapped[str | None] = mapped_column(String)
+    portfolio_url: Mapped[str | None] = mapped_column(String)
+    resume_filename: Mapped[str | None] = mapped_column(String)
+    resume_url: Mapped[str | None] = mapped_column(String)
+    leetcode_handle: Mapped[str | None] = mapped_column(String)
+    leetcode_solved_month: Mapped[int] = mapped_column(Integer, default=0)
+    leetcode_total_solved: Mapped[int] = mapped_column(Integer, default=0)
+    codeforces_handle: Mapped[str | None] = mapped_column(String)
+    codeforces_solved_month: Mapped[int] = mapped_column(Integer, default=0)
+    codeforces_total_solved: Mapped[int] = mapped_column(Integer, default=0)
+    hackerrank_handle: Mapped[str | None] = mapped_column(String)
+    hackerrank_solved_month: Mapped[int] = mapped_column(Integer, default=0)
+    hackerrank_total_solved: Mapped[int] = mapped_column(Integer, default=0)
+    total_coding_score: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class Drive(Base):
@@ -42,6 +59,8 @@ class Drive(Base):
     required_cgpa: Mapped[float] = mapped_column(Float, default=0.0)
     total_rounds: Mapped[int] = mapped_column(Integer, default=4)
     drive_date: Mapped[str | None] = mapped_column(String)
+    description: Mapped[str | None] = mapped_column(Text)
+
 
 
 class StudentDriveResult(Base):
@@ -127,6 +146,7 @@ class StudentRoster(Base):
     tenth_percentage: Mapped[float | None] = mapped_column(Float)
     twelfth_percentage: Mapped[float | None] = mapped_column(Float)
     skills: Mapped[str | None] = mapped_column(Text)
+    year: Mapped[str] = mapped_column(String, default="4th Year")
     created_at: Mapped[str] = mapped_column(String, default=timestamp_value)
 
 

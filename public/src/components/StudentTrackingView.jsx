@@ -1,851 +1,3 @@
-function CoordinatorDashboard({ user, onLogout }) {
-    // Strict Access Control Guard: Students cannot view Coordinator Workspace or User Access tools
-    if (user && user.role && user.role.toLowerCase() === 'student') {
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#0f172a', color: '#f8fafc', padding: '24px' }}>
-                <h2 style={{ fontSize: '1.5rem', color: '#ef4444', marginBottom: '8px' }}>Access Restricted</h2>
-                <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Student accounts are not authorized to access Coordinator management tools.</p>
-                <button type="button" onClick={onLogout} style={{ padding: '10px 20px', borderRadius: '8px', background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '600' }}>
-                    Sign Out
-                </button>
-            </div>
-        );
-    }
-
-    const [drives, setDrives] = React.useState([]);
-    const [loadingDrives, setLoadingDrives] = React.useState(true);
-    const [interventions, setInterventions] = React.useState([]);
-    const [loadingInterventions, setLoadingInterventions] = React.useState(true);
-    const [activeTab, setActiveTab] = React.useState('drives');
-
-    // Modal states
-    const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
-    const [editingDrive, setEditingDrive] = React.useState(null);
-    const [isUploadModalOpen, setIsUploadModalOpen] = React.useState(false);
-    const [isViewModalOpen, setIsViewModalOpen] = React.useState(false);
-    const [isUserAccessModalOpen, setIsUserAccessModalOpen] = React.useState(false);
-    const [isTemplatesModalOpen, setIsTemplatesModalOpen] = React.useState(false);
-    const [isRosterModalOpen, setIsRosterModalOpen] = React.useState(false);
-    const [selectedDriveForUpload, setSelectedDriveForUpload] = React.useState(null);
-    const [selectedDriveForView, setSelectedDriveForView] = React.useState(null);
-
-    const [searchTerm, setSearchTerm] = React.useState('');
-    const [viewMode, setViewMode] = React.useState('table'); // 'table' or 'grid'
-    const [toastMessage, setToastMessage] = React.useState('');
-
-    const fetchDrives = React.useCallback(async () => {
-        setLoadingDrives(true);
-        try {
-            const res = await fetch('/api/drives');
-            const data = await res.json();
-            if (res.ok && data.success) {
-                setDrives(data.drives || []);
-            }
-        } catch (err) {
-            console.error('Failed to fetch drives:', err);
-        } finally {
-            setLoadingDrives(false);
-        }
-    }, []);
-
-    React.useEffect(() => {
-        fetchDrives();
-    }, [fetchDrives]);
-
-    const [coordinatorStats, setCoordinatorStats] = React.useState({
-        total_students: 0,
-        placed_count: 0
-    });
-
-    const fetchCoordinatorStats = React.useCallback(async () => {
-        try {
-            const res = await fetch('/api/coordinator/students-tracking');
-            if (res.ok) {
-                const data = await res.json();
-                if (data.stats) {
-                    setCoordinatorStats({
-                        total_students: data.stats.total_students || 0,
-                        placed_count: data.stats.placed_count || 0
-                    });
-                }
-            }
-        } catch (e) {
-            console.error('Failed to fetch coordinator stats:', e);
-        }
-    }, []);
-
-    React.useEffect(() => {
-        fetchCoordinatorStats();
-    }, [fetchCoordinatorStats]);
-
-    const fetchInterventions = React.useCallback(async () => {
-        setLoadingInterventions(true);
-        try {
-            const res = await fetch('/api/interventions', {
-                headers: window.interventionHeaders(user)
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setInterventions(data.interventions || []);
-            }
-        } catch (err) {
-            console.error('Failed to fetch interventions:', err);
-        } finally {
-            setLoadingInterventions(false);
-        }
-    }, [user]);
-
-    React.useEffect(() => {
-        fetchInterventions();
-    }, [fetchInterventions]);
-
-    const updateInterventionStatus = async (interventionId, nextStatus) => {
-        const res = await fetch(`/api/interventions/${interventionId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
-            body: JSON.stringify({ status: nextStatus })
-        });
-        if (res.ok) {
-            setInterventions(prev => prev.map(item => item.id === interventionId ? { ...item, status: nextStatus } : item));
-            setToastMessage(`Intervention marked ${nextStatus.toLowerCase()}.`);
-            setTimeout(() => setToastMessage(''), 3500);
-        }
-    };
-
-    const regenerateIntervention = async (studentGmail) => {
-        const res = await fetch('/api/interventions/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
-            body: JSON.stringify({ gmail: studentGmail })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            await fetchInterventions();
-            setToastMessage('Intervention generated successfully.');
-        } else {
-            setToastMessage(data.detail || 'Unable to generate intervention.');
-        }
-        setTimeout(() => setToastMessage(''), 3500);
-    };
-
-    const handleDriveCreated = (savedDrive, isEdit = false) => {
-        if (isEdit) {
-            setDrives(prev => prev.map(d => d.id === savedDrive.id ? { ...d, ...savedDrive } : d));
-            setToastMessage(`Drive for "${savedDrive.company_name}" altered successfully.`);
-            if (selectedDriveForView && selectedDriveForView.id === savedDrive.id) {
-                setSelectedDriveForView(prev => ({ ...prev, ...savedDrive }));
-            }
-        } else {
-            setDrives(prev => [savedDrive, ...prev]);
-            setToastMessage(`Drive for "${savedDrive.company_name}" initialized successfully.`);
-        }
-        setTimeout(() => setToastMessage(''), 3500);
-    };
-
-    const openCreateModal = () => {
-        setEditingDrive(null);
-        setIsCreateModalOpen(true);
-    };
-
-    const openEditModal = (drive) => {
-        setEditingDrive(drive);
-        setIsCreateModalOpen(true);
-    };
-
-    const handleResultsUploaded = (driveId) => {
-        fetchDrives();
-        fetchCoordinatorStats();
-        setToastMessage(`Student results updated successfully.`);
-        setTimeout(() => setToastMessage(''), 3500);
-    };
-
-    const handleUserAccessGranted = (data) => {
-        fetchCoordinatorStats();
-        setToastMessage(`Successfully granted access to ${data.total_processed} user account(s).`);
-        setTimeout(() => setToastMessage(''), 3500);
-    };
-
-    const handleRosterUploaded = (data) => {
-        fetchCoordinatorStats();
-        setToastMessage(`Successfully imported/updated ${data.imported_count} student academic profiles.`);
-        setTimeout(() => setToastMessage(''), 3500);
-    };
-
-    const openUploadModal = (driveId = null) => {
-        setSelectedDriveForUpload(driveId);
-        setIsUploadModalOpen(true);
-    };
-
-    const openViewModal = (drive) => {
-        setSelectedDriveForView(drive);
-        setIsViewModalOpen(true);
-    };
-
-    const filteredDrives = drives.filter(d =>
-        d.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.job_role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.allowed_branches.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    return (
-        <div className="laptop-dashboard">
-            {/* Top Navigation Bar */}
-            <header className="desktop-navbar">
-                <div className="nav-left">
-                    <div className="brand-icon" title="Placement Intervention System">
-                        <img src="/static/icon.png" alt="Placement Intervention System" />
-                    </div>
-                    <div className="brand-text">
-                        <span className="portal-name">Placement Intervention System</span>
-                        <span className="portal-sub">
-                            Coordinator Workspace &bull; <span className="brand-tagline-badge">Guide &bull; Track</span>
-                        </span>
-                    </div>
-                </div>
-
-                <div className="coordinator-nav-tabs">
-                    <button
-                        type="button"
-                        className={`coord-tab-button ${activeTab === 'drives' ? 'active tab-drives' : ''}`}
-                        onClick={() => setActiveTab('drives')}
-                    >
-                        <div className="tab-icon-wrap">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                            </svg>
-                        </div>
-                        <span className="tab-text">Placement Drives</span>
-                        <span className="tab-badge">{drives.length}</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        className={`coord-tab-button ${activeTab === 'students' ? 'active tab-students' : ''}`}
-                        onClick={() => setActiveTab('students')}
-                    >
-                        <div className="tab-icon-wrap">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                        </div>
-                        <span className="tab-text">Student 360° Tracking</span>
-                        <span className="tab-tag-pill">Year & Dept</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        className={`coord-tab-button ${activeTab === 'interventions' ? 'active tab-interventions' : ''}`}
-                        onClick={() => setActiveTab('interventions')}
-                    >
-                        <div className="tab-icon-wrap">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
-                        </div>
-                        <span className="tab-text">Interventions</span>
-                        <span className="tab-badge badge-alert">{interventions.length}</span>
-                    </button>
-                </div>
-
-                <div className="nav-right">
-                    <div className="user-badge">
-                        <span className="user-email">{user.gmail}</span>
-                        <span className="badge-pill coordinator-pill">Coordinator</span>
-                    </div>
-
-                    <button type="button" className="btn-nav-signout" onClick={onLogout} title="Sign Out">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        Sign Out
-                    </button>
-                </div>
-            </header>
-
-            {/* Toast Notification */}
-            {toastMessage && (
-                <div className="toast-bar">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>{toastMessage}</span>
-                </div>
-            )}
-
-            {/* Main Content Area */}
-            <div className="dashboard-content">
-                {activeTab === 'students' && (
-                    <StudentTrackingView
-                        user={user}
-                        showToast={(msg) => {
-                            setToastMessage(msg);
-                            setTimeout(() => setToastMessage(''), 3500);
-                        }}
-                    />
-                )}
-
-                {activeTab === 'interventions' && (
-                    <InterventionRoster
-                        user={user}
-                        canGenerate={true}
-                        title="All Student Interventions"
-                        description="Expand any authorized student to inspect their intervention and action plan."
-                    />
-                )}
-
-                {activeTab === 'drives' && (
-                    <>
-                        {/* Metrics Banner */}
-                        <div className="metrics-row">
-                            <div className="metric-box">
-                                <span className="metric-num">{drives.length}</span>
-                                <span className="metric-title">Active Drives</span>
-                            </div>
-                            <div className="metric-box">
-                                <span className="metric-num">{coordinatorStats.total_students}</span>
-                                <span className="metric-title">Candidates Registered</span>
-                            </div>
-                            <div className="metric-box">
-                                <span className="metric-num">{coordinatorStats.placed_count}</span>
-                                <span className="metric-title">Placed Students</span>
-                            </div>
-                            <div className="metric-box">
-                                <span className="metric-num">
-                                    {drives.reduce((acc, d) => acc + (d.results_count || 0), 0)}
-                                </span>
-                                <span className="metric-title">Total Results Uploaded</span>
-                            </div>
-                        </div>
-
-                {/* Toolbar & Filter Bar */}
-                <div className="table-toolbar">
-                    <div className="search-field">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        <input
-                            type="text"
-                            placeholder="Filter by company, position, or branch..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="toolbar-actions">
-                        <div className="view-toggle-group">
-                            <button
-                                type="button"
-                                className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
-                                onClick={() => setViewMode('table')}
-                                title="Table View"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="8" y1="6" x2="21" y2="6"></line>
-                                    <line x1="8" y1="12" x2="21" y2="12"></line>
-                                    <line x1="8" y1="18" x2="21" y2="18"></line>
-                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                                </svg>
-                                Table
-                            </button>
-                            <button
-                                type="button"
-                                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                                onClick={() => setViewMode('grid')}
-                                title="Grid View"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <rect x="3" y="3" width="7" height="7"></rect>
-                                    <rect x="14" y="3" width="7" height="7"></rect>
-                                    <rect x="14" y="14" width="7" height="7"></rect>
-                                    <rect x="3" y="14" width="7" height="7"></rect>
-                                </svg>
-                                Cards
-                            </button>
-                        </div>
-
-                        <button
-                            type="button"
-                            className="btn-templates-hub"
-                            onClick={() => setIsTemplatesModalOpen(true)}
-                            title="Download official Excel (.xlsx) and CSV templates"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            Download Templates
-                        </button>
-
-                        <button
-                            type="button"
-                            className="btn-upload-access"
-                            onClick={() => setIsUserAccessModalOpen(true)}
-                            title="Upload Excel with Gmails to Grant User Access"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            Grant User Access (Excel)
-                        </button>
-
-                        <button
-                            type="button"
-                            className="btn-upload-roster"
-                            onClick={() => setIsRosterModalOpen(true)}
-                            title="Upload Excel with Student Academic Profiles, CGPA, and Skills"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="8.5" cy="7" r="4"></circle>
-                                <line x1="20" y1="8" x2="20" y2="14"></line>
-                                <line x1="23" y1="11" x2="17" y2="11"></line>
-                            </svg>
-                            Import Student Roster (Excel)
-                        </button>
-
-                        <button
-                            type="button"
-                            className="btn-upload-results"
-                            onClick={() => openUploadModal(null)}
-                            title="Upload Excel with Candidate Gmail & Results"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            Upload Excel Results
-                        </button>
-
-                        <button
-                            type="button"
-                            className="btn-create-drive"
-                            onClick={openCreateModal}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Create Placement Drive
-                        </button>
-                    </div>
-                </div>
-
-                {/* Main Data Section */}
-                <div className="data-panel">
-                    {loadingDrives ? (
-                        <div className="panel-loading">
-                            <div className="spinner-sm"></div>
-                            <span>Loading placement drives...</span>
-                        </div>
-                    ) : filteredDrives.length === 0 ? (
-                        <div className="panel-empty">
-                            <h3>No Drives Found</h3>
-                            <p>Click "Create Placement Drive" to add a new recruitment drive.</p>
-                            <button type="button" className="btn-create-drive" onClick={openCreateModal}>
-                                Create Drive
-                            </button>
-                        </div>
-                    ) : viewMode === 'table' ? (
-                        /* Professional Compact Data Table */
-                        <div className="table-responsive">
-                            <table className="enterprise-table">
-                                <thead>
-                                    <tr>
-                                        <th>Company</th>
-                                        <th>Job Designation</th>
-                                        <th>CTC (LPA)</th>
-                                        <th>Min CGPA</th>
-                                        <th>Eligible Branches</th>
-                                        <th>Location</th>
-                                        <th>Deadline</th>
-                                        <th>Results Count</th>
-                                        <th>Status</th>
-                                        <th style={{ textAlign: 'right' }}>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredDrives.map(drive => (
-                                        <tr key={drive.id}>
-                                            <td
-                                                className="font-semibold company-interactive-cell"
-                                                onClick={() => openViewModal(drive)}
-                                                title="Touch company to view complete interview process, round funnels & selected students"
-                                            >
-                                                <div className="company-interactive-wrap">
-                                                    <span className="company-interactive-title">{drive.company_name}</span>
-                                                    <span className="round-count-badge">
-                                                        {drive.total_rounds || 4} Rounds
-                                                    </span>
-                                                </div>
-                                                {drive.description && (
-                                                    <div style={{ fontSize: '0.73rem', color: '#94a3b8', marginTop: '3px', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={drive.description}>
-                                                        {drive.description}
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td>{drive.job_role}</td>
-                                            <td className="ctc-text">{drive.ctc_lpa} LPA</td>
-                                            <td>{drive.min_cgpa ? `${drive.min_cgpa} / 10` : 'None'}</td>
-                                            <td>
-                                                <div className="tag-list">
-                                                    {drive.allowed_branches.split(',').map((b, i) => (
-                                                        <span key={i} className="mini-tag">{b.trim()}</span>
-                                                    ))}
-                                                </div>
-                                            </td>
-                                            <td>{drive.location || 'On Campus'}</td>
-                                            <td>{drive.deadline || 'Open'}</td>
-                                            <td>
-                                                <span className="results-badge" onClick={() => openViewModal(drive)}>
-                                                    {drive.results_count || 0} Updated
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span className={`status-badge ${drive.status ? drive.status.toLowerCase() : 'active'}`}>
-                                                    {drive.status || 'Active'}
-                                                </span>
-                                            </td>
-                                            <td style={{ textAlign: 'right' }}>
-                                                <div className="action-button-group">
-                                                    <button
-                                                        type="button"
-                                                        className="action-btn-alter"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openEditModal(drive);
-                                                        }}
-                                                        title="Alter company drive, modify number of rounds, descriptions, and criteria"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M12 20h9"></path>
-                                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                                        </svg>
-                                                        <span>Alter</span>
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="action-btn-secondary"
-                                                        onClick={() => openUploadModal(drive.id)}
-                                                        title="Upload Excel results with Gmail & Result"
-                                                        style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                            <polyline points="17 8 12 3 7 8"></polyline>
-                                                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                                                        </svg>
-                                                        <span>Upload</span>
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="action-btn-primary"
-                                                        onClick={() => openViewModal(drive)}
-                                                        title="View complete interview process, round funnels & selected students"
-                                                        style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                            <line x1="6" y1="3" x2="6" y2="15"></line>
-                                                            <circle cx="18" cy="6" r="3"></circle>
-                                                            <circle cx="6" cy="18" r="3"></circle>
-                                                            <path d="M18 9a9 9 0 0 1-9 9"></path>
-                                                        </svg>
-                                                        <span>Process & Results ({drive.results_count || 0})</span>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        /* Compact Desktop Cards Grid */
-                        <div className="cards-grid-laptop">
-                            {filteredDrives.map(drive => (
-                                <div key={drive.id} className="laptop-card">
-                                    <div
-                                        className="card-top"
-                                        style={{ cursor: 'pointer' }}
-                                        onClick={() => openViewModal(drive)}
-                                        title="Touch to view complete company interview process, funnels & selected students"
-                                    >
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                                <h4 className="card-company" style={{ color: '#60a5fa', margin: 0 }}>{drive.company_name}</h4>
-                                                <span className="round-count-badge">
-                                                    {drive.total_rounds || 4} Rounds
-                                                </span>
-                                            </div>
-                                            <span className="card-role">{drive.job_role}</span>
-                                        </div>
-                                        <span className={`status-badge ${drive.status ? drive.status.toLowerCase() : 'active'}`}>
-                                            {drive.status || 'Active'}
-                                        </span>
-                                    </div>
-                                    <div className="card-metrics">
-                                        <div>
-                                            <span className="lbl">Package</span>
-                                            <span className="val ctc-text">{drive.ctc_lpa} LPA</span>
-                                        </div>
-                                        <div>
-                                            <span className="lbl">Rounds</span>
-                                            <span className="val" style={{ color: '#d8b4fe' }}>{drive.total_rounds || 4} Stages</span>
-                                        </div>
-                                        <div>
-                                            <span className="lbl">Results</span>
-                                            <span className="val">{drive.results_count || 0} Records</span>
-                                        </div>
-                                    </div>
-                                    {drive.description && (
-                                        <div style={{ fontSize: '0.74rem', color: '#94a3b8', margin: '4px 0 8px', lineHeight: '1.3', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} title={drive.description}>
-                                            {drive.description}
-                                        </div>
-                                    )}
-                                    <div className="card-branches">
-                                        {drive.allowed_branches.split(',').map((b, i) => (
-                                            <span key={i} className="mini-tag">{b.trim()}</span>
-                                        ))}
-                                    </div>
-                                    <div className="card-actions-row">
-                                        <button
-                                            type="button"
-                                            className="action-btn-alter"
-                                            onClick={() => openEditModal(drive)}
-                                            title="Alter company drive, change total rounds and descriptions"
-                                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M12 20h9"></path>
-                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                            </svg>
-                                            <span>Alter</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn-card-action outline"
-                                            onClick={() => openUploadModal(drive.id)}
-                                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                <polyline points="17 8 12 3 7 8"></polyline>
-                                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                                            </svg>
-                                            <span>Upload Excel</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn-card-action primary"
-                                            onClick={() => openViewModal(drive)}
-                                            title="View complete interview process, round funnels & selected students"
-                                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                <line x1="6" y1="3" x2="6" y2="15"></line>
-                                                <circle cx="18" cy="6" r="3"></circle>
-                                                <circle cx="6" cy="18" r="3"></circle>
-                                                <path d="M18 9a9 9 0 0 1-9 9"></path>
-                                            </svg>
-                                            <span>Process ({drive.results_count || 0})</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                </>
-                )}
-            </div>
-
-            {/* Create / Alter Drive Modal */}
-            <CreateDriveModal
-                isOpen={isCreateModalOpen}
-                onClose={() => {
-                    setIsCreateModalOpen(false);
-                    setEditingDrive(null);
-                }}
-                onDriveCreated={handleDriveCreated}
-                driveToEdit={editingDrive}
-            />
-
-            {/* Upload Excel Results Modal */}
-            <UploadResultsModal
-                isOpen={isUploadModalOpen}
-                onClose={() => setIsUploadModalOpen(false)}
-                drives={drives}
-                initialDriveId={selectedDriveForUpload}
-                onResultsUploaded={handleResultsUploaded}
-            />
-
-            {/* View Company Recruitment Process & Results Modal */}
-            <ViewResultsModal
-                isOpen={isViewModalOpen}
-                onClose={() => setIsViewModalOpen(false)}
-                drive={selectedDriveForView}
-                onOpenUpload={() => {
-                    setIsViewModalOpen(false);
-                    openUploadModal(selectedDriveForView?.id);
-                }}
-            />
-
-            {/* Upload User Access Modal */}
-            <UploadUserAccessModal
-                isOpen={isUserAccessModalOpen}
-                onClose={() => setIsUserAccessModalOpen(false)}
-                onAccessGranted={handleUserAccessGranted}
-            />
-
-            {/* Upload Student Roster Modal */}
-            <UploadStudentRosterModal
-                isOpen={isRosterModalOpen}
-                onClose={() => setIsRosterModalOpen(false)}
-                onRosterUploaded={handleRosterUploaded}
-            />
-
-            {/* Templates Hub Repository Modal */}
-            <TemplatesHubModal
-                isOpen={isTemplatesModalOpen}
-                onClose={() => setIsTemplatesModalOpen(false)}
-            />
-        </div>
-    );
-}
-
-function TemplatesHubModal({ isOpen, onClose }) {
-    if (!isOpen) return null;
-
-    const templates = [
-        {
-            title: "User Accounts & Role Access Template",
-            badge: "Grant User Access",
-            filename_xlsx: "sample_user_access.xlsx",
-            filename_csv: "sample_user_access.csv",
-            description: "Bulk grant platform credentials for Students, Mentors, Coordinators, Department Heads, and Recruiters.",
-            required: ["User Email / gmail *"],
-            optional: ["Role (Student, Mentor...)", "Password"]
-        },
-        {
-            title: "Drive Results & Verdicts Template",
-            badge: "Upload Excel Results",
-            filename_xlsx: "sample_drive_results.xlsx",
-            filename_csv: "sample_drive_results.csv",
-            description: "Upload candidate evaluations with explicit statuses (Selected, Rejected, On Hold) and scores.",
-            required: ["Student Gmail *", "Result Status *"],
-            optional: ["Round", "Score", "Student Name"]
-        },
-        {
-            title: "Drive Shortlist Template (Emails Only)",
-            badge: "Upload Shortlist",
-            filename_xlsx: "sample_drive_shortlist.xlsx",
-            filename_csv: "sample_drive_shortlist.csv",
-            description: "Upload shortlisted candidate emails to automatically advance them to the next interview round.",
-            required: ["Student Gmail *"],
-            optional: ["Student Name", "Branch"]
-        },
-        {
-            title: "Student Academic Profiles Roster Template",
-            badge: "Student Roster",
-            filename_xlsx: "sample_student_roster.xlsx",
-            filename_csv: "sample_student_roster.csv",
-            description: "Bulk import academic records, CGPA, 10th/12th percentages, and technical skills.",
-            required: ["Register Number *", "Full Name *", "Student Email *", "Department *", "CGPA *"],
-            optional: ["10th Percentage", "12th Percentage", "Technical Skills"]
-        },
-        {
-            title: "Company Placement Drives Schedule Template",
-            badge: "Company Drives",
-            filename_xlsx: "sample_company_drives.xlsx",
-            filename_csv: "sample_company_drives.csv",
-            description: "Bulk schedule on-campus placement drives with company type, CTC LPA, eligibility criteria, and rounds.",
-            required: ["Company Name *", "Job Role *", "CTC LPA *"],
-            optional: ["Company Type", "Required CGPA", "Allowed Branches", "Total Rounds", "Location", "Drive Date", "Status"]
-        }
-    ];
-
-    return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-dialog large-dialog" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-head">
-                    <div>
-                        <h3>Coordinator Excel Templates Repository</h3>
-                        <p className="modal-sub">Download official sample templates to verify column formats before uploading bulk files</p>
-                    </div>
-                    <button type="button" className="modal-close" onClick={onClose}>&times;</button>
-                </div>
-
-                <div className="templates-hub-list" style={{ marginTop: '14px' }}>
-                    {templates.map((tpl, i) => (
-                        <div key={i} className="tpl-item-card">
-                            <div className="tpl-item-info">
-                                <div className="tpl-item-title">
-                                    {tpl.title}
-                                    <span className="tpl-item-mode">{tpl.badge}</span>
-                                </div>
-                                <p className="tpl-item-desc">{tpl.description}</p>
-                                <div className="template-columns-info" style={{ marginTop: '6px', marginBottom: 0 }}>
-                                    {tpl.required.map((req, rIdx) => (
-                                        <span key={rIdx} className="col-badge required">{req}</span>
-                                    ))}
-                                    {tpl.optional.map((opt, oIdx) => (
-                                        <span key={oIdx} className="col-badge optional">{opt}</span>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="template-download-actions" style={{ flexDirection: 'column', minWidth: '130px' }}>
-                                <a
-                                    href={`/api/templates/download/${tpl.filename_xlsx}`}
-                                    download={tpl.filename_xlsx}
-                                    className="btn-download-tpl excel"
-                                    style={{ justifyContent: 'center' }}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                    Excel (.xlsx)
-                                </a>
-                                <a
-                                    href={`/api/templates/download/${tpl.filename_csv}`}
-                                    download={tpl.filename_csv}
-                                    className="btn-download-tpl csv"
-                                    style={{ justifyContent: 'center' }}
-                                >
-                                    CSV (.csv)
-                                </a>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="modal-foot" style={{ marginTop: '16px' }}>
-                    <button type="button" className="btn-submit" onClick={onClose}>
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 function StudentTrackingView({ user, showToast }) {
     const [loading, setLoading] = React.useState(true);
     const [students, setStudents] = React.useState([]);
@@ -960,21 +112,142 @@ function StudentTrackingView({ user, showToast }) {
         }
     };
 
-    // Toggle Action Task status locally for responsiveness
-    const handleToggleTask = (taskIndex, ivIndex) => {
+    // Batch trigger AI plans for all at-risk students in view
+    const handleGenerateAllAtRisk = async () => {
+        const atRiskStudents = students.filter(s => s.placement_status === 'At Risk' || s.highest_risk === 'HIGH' || s.highest_risk === 'MEDIUM');
+        if (atRiskStudents.length === 0) {
+            if (showToast) showToast('No at-risk students found in current filtered cohort.');
+            return;
+        }
+        setGeneratingIntervention(true);
+        if (showToast) showToast(`Synthesizing AI intervention plans for ${atRiskStudents.length} candidate(s)...`);
+        try {
+            let successCount = 0;
+            for (const s of atRiskStudents) {
+                try {
+                    const res = await fetch('/api/interventions/generate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...window.interventionHeaders(user)
+                        },
+                        body: JSON.stringify({
+                            student_id: s.student_id,
+                            gmail: s.email
+                        })
+                    });
+                    if (res.ok) successCount++;
+                } catch (subErr) {
+                    console.error('Batch generation item error:', subErr);
+                }
+            }
+            await fetchTrackingData();
+            if (showToast) showToast(`Generated AI intervention plans for ${successCount} student(s).`);
+        } catch (err) {
+            console.error('Failed to run batch intervention generation:', err);
+            if (showToast) showToast('Error during batch intervention generation.');
+        } finally {
+            setGeneratingIntervention(false);
+        }
+    };
+
+    // Toggle Action Task status with instant DB persistence
+    const handleToggleTask = async (taskIndex, ivIndex, actionId) => {
         if (!selectedStudent) return;
+        const currentCompleted = !!selectedStudent.interventions?.[ivIndex]?.actions?.[taskIndex]?.completed;
+        const nextCompleted = !currentCompleted;
+
         setSelectedStudent(prev => {
             const updated = { ...prev };
             const ivs = [...(updated.interventions || [])];
             if (ivs[ivIndex] && ivs[ivIndex].actions && ivs[ivIndex].actions[taskIndex]) {
                 const actions = [...ivs[ivIndex].actions];
-                actions[taskIndex] = { ...actions[taskIndex], completed: !actions[taskIndex].completed };
+                actions[taskIndex] = { ...actions[taskIndex], completed: nextCompleted };
                 ivs[ivIndex] = { ...ivs[ivIndex], actions };
                 updated.interventions = ivs;
             }
             return updated;
         });
-        if (showToast) showToast('Action checklist task updated.');
+
+        if (actionId) {
+            try {
+                await fetch(`/api/intervention/actions/${actionId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
+                    body: JSON.stringify({ completed: nextCompleted })
+                });
+            } catch (err) {
+                console.error('Failed to persist action update:', err);
+            }
+        }
+        if (showToast) showToast(nextCompleted ? 'Task marked complete.' : 'Task reopened.');
+    };
+
+    // Update intervention overall status with DB persistence
+    const handleUpdateInterventionStatus = async (interventionId, newStatus) => {
+        try {
+            const res = await fetch(`/api/interventions/${interventionId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
+                body: JSON.stringify({ status: newStatus })
+            });
+            if (res.ok) {
+                setSelectedStudent(prev => {
+                    if (!prev) return prev;
+                    const updatedIvs = (prev.interventions || []).map(iv =>
+                        iv.id === interventionId ? { ...iv, status: newStatus } : iv
+                    );
+                    return { ...prev, interventions: updatedIvs };
+                });
+                if (showToast) showToast(`Intervention status updated to ${newStatus}.`);
+            }
+        } catch (err) {
+            console.error('Failed to update intervention status:', err);
+        }
+    };
+
+    // Append new remediation action task
+    const [addingActionForIv, setAddingActionForIv] = React.useState(null);
+    const [newActionTitle, setNewActionTitle] = React.useState('');
+    const [newActionWeakness, setNewActionWeakness] = React.useState('');
+    const [newActionResource, setNewActionResource] = React.useState('');
+    const [newActionDueDate, setNewActionDueDate] = React.useState('');
+
+    const handleAppendAction = async (interventionId) => {
+        if (!newActionTitle.trim()) return;
+        try {
+            const res = await fetch(`/api/interventions/${interventionId}/actions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
+                body: JSON.stringify({
+                    title: newActionTitle.trim(),
+                    weakness_area: newActionWeakness.trim() || 'Remediation',
+                    resources: newActionResource.trim() || 'LMS & Mentor Guidance',
+                    due_date: newActionDueDate.trim() || 'Within 2 weeks'
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setSelectedStudent(prev => {
+                    if (!prev) return prev;
+                    const updatedIvs = (prev.interventions || []).map(iv => {
+                        if (iv.id === interventionId) {
+                            return { ...iv, actions: [...(iv.actions || []), data.action] };
+                        }
+                        return iv;
+                    });
+                    return { ...prev, interventions: updatedIvs };
+                });
+                setNewActionTitle('');
+                setNewActionWeakness('');
+                setNewActionResource('');
+                setNewActionDueDate('');
+                setAddingActionForIv(null);
+                if (showToast) showToast('New action item added to plan.');
+            }
+        } catch (err) {
+            console.error('Failed to append action:', err);
+        }
     };
 
     return (
@@ -1024,6 +297,20 @@ function StudentTrackingView({ user, showToast }) {
                                 <line x1="12" y1="15" x2="12" y2="3"></line>
                             </svg>
                             Export Excel (.xlsx)
+                        </button>
+
+                        <button
+                            type="button"
+                            className="btn-create-drive"
+                            onClick={handleGenerateAllAtRisk}
+                            disabled={generatingIntervention}
+                            title="Automatically synthesize personalized AI intervention & action plans for all at-risk students"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', padding: '7px 14px' }}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                            {generatingIntervention ? 'Analyzing & Generating...' : '⚡ Trigger AI for At-Risk'}
                         </button>
                     </div>
                 </div>
@@ -1225,6 +512,23 @@ function StudentTrackingView({ user, showToast }) {
                                                 {s.open_interventions_count} Intervention{s.open_interventions_count > 1 ? 's' : ''}
                                             </span>
                                         )}
+
+                                        <span style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '4px', background: 'rgba(249, 115, 22, 0.15)', color: '#fdba74', border: '1px solid rgba(249, 115, 22, 0.3)', fontWeight: '600' }}>
+                                            🔥 {s.monthly_total_solved || 0} solved/mo
+                                        </span>
+
+                                        {s.resume_url && (
+                                            <a
+                                                href={s.resume_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                style={{ fontSize: '0.72rem', color: '#60a5fa', textDecoration: 'none', background: 'rgba(59, 130, 246, 0.12)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '4px', padding: '2px 6px', fontWeight: '600' }}
+                                                title={`View ${s.name}'s Resume`}
+                                            >
+                                                📄 Resume
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             );
@@ -1244,6 +548,32 @@ function StudentTrackingView({ user, showToast }) {
                                         <div className="hero-titles">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                                                 <h2>{selectedStudent.name}</h2>
+                                                {selectedStudent.resume_url && (
+                                                    <a
+                                                        href={selectedStudent.resume_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="btn-download-dossier"
+                                                        style={{
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '6px',
+                                                            padding: '5px 12px',
+                                                            background: 'linear-gradient(135deg, #059669, #10b981)',
+                                                            color: '#ffffff',
+                                                            borderRadius: '7px',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: '600',
+                                                            textDecoration: 'none',
+                                                            border: '1px solid #10b981',
+                                                            boxShadow: '0 2px 8px rgba(16,185,129,0.25)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                        title={`View ${selectedStudent.name}'s verified resume`}
+                                                    >
+                                                        📄 View Resume
+                                                    </a>
+                                                )}
                                                 <a
                                                     href={`/api/coordinator/export/student/${encodeURIComponent(selectedStudent.register_number || selectedStudent.email)}`}
                                                     download
@@ -1273,7 +603,7 @@ function StudentTrackingView({ user, showToast }) {
                                                     <span>Download Dossier (.xlsx)</span>
                                                 </a>
                                             </div>
-                                            <div className="hero-sub">
+                                            <div className="hero-sub" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
                                                 <span><strong>Reg:</strong> {selectedStudent.register_number}</span>
                                                 <span>•</span>
                                                 <span><strong>Dept:</strong> {selectedStudent.department}</span>
@@ -1281,11 +611,21 @@ function StudentTrackingView({ user, showToast }) {
                                                 <span><strong>Year:</strong> {selectedStudent.year}</span>
                                                 <span>•</span>
                                                 <span>{selectedStudent.email}</span>
+                                                {selectedStudent.phone && (
+                                                    <>
+                                                        <span>•</span>
+                                                        <span><strong>Phone:</strong> {selectedStudent.phone}</span>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="hero-right-metrics">
+                                        <div className="hero-metric-item" style={{ background: 'rgba(234, 88, 12, 0.12)', border: '1px solid rgba(234, 88, 12, 0.35)' }}>
+                                            <div className="hero-metric-val" style={{ color: '#fb923c' }}>{selectedStudent.monthly_total_solved || 0}</div>
+                                            <div className="hero-metric-lbl">Monthly Solved</div>
+                                        </div>
                                         <div className="hero-metric-item">
                                             <div className="hero-metric-val" style={{ color: '#60a5fa' }}>{selectedStudent.cgpa}</div>
                                             <div className="hero-metric-lbl">CGPA</div>
@@ -1435,8 +775,9 @@ function StudentTrackingView({ user, showToast }) {
                                             </div>
                                         ) : (
                                             selectedStudent.process_history.map((item, idx) => {
-                                                const isSelectedVerdict = (item.result || '').toLowerCase().includes('selected');
-                                                const isRejectedVerdict = (item.result || '').toLowerCase().includes('rejected');
+                                                const resLower = (item.result || '').toLowerCase();
+                                                const isRejectedVerdict = resLower.includes('reject') || resLower.includes('fail') || resLower.includes('not select');
+                                                const isSelectedVerdict = !isRejectedVerdict && (resLower.includes('select') || resLower.includes('placed') || resLower.includes('offer') || resLower.includes('hired'));
 
                                                 return (
                                                     <div key={idx} className="process-drive-card">
@@ -1532,16 +873,26 @@ function StudentTrackingView({ user, showToast }) {
                                                                 <span className={isHigh ? 'risk-alert-chip' : 'status-pill-at-risk'}>
                                                                     Priority: {iv.priority}
                                                                 </span>
-                                                                <span style={{
-                                                                    fontSize: '0.72rem',
-                                                                    fontWeight: '600',
-                                                                    padding: '2px 8px',
-                                                                    borderRadius: '4px',
-                                                                    background: iv.status === 'RESOLVED' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)',
-                                                                    color: iv.status === 'RESOLVED' ? '#34d399' : '#93c5fd'
-                                                                }}>
-                                                                    {iv.status}
-                                                                </span>
+                                                                <select
+                                                                    value={iv.status || 'OPEN'}
+                                                                    onChange={(e) => handleUpdateInterventionStatus(iv.id, e.target.value)}
+                                                                    style={{
+                                                                        fontSize: '0.75rem',
+                                                                        fontWeight: '600',
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '5px',
+                                                                        background: iv.status === 'RESOLVED' || iv.status === 'COMPLETED' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                                                                        color: iv.status === 'RESOLVED' || iv.status === 'COMPLETED' ? '#34d399' : '#93c5fd',
+                                                                        border: '1px solid rgba(59, 130, 246, 0.4)',
+                                                                        cursor: 'pointer'
+                                                                    }}
+                                                                >
+                                                                    <option value="OPEN">OPEN</option>
+                                                                    <option value="IN_PROGRESS">IN PROGRESS</option>
+                                                                    <option value="COMPLETED">COMPLETED</option>
+                                                                    <option value="RESOLVED">RESOLVED</option>
+                                                                    <option value="CANCELLED">CANCELLED</option>
+                                                                </select>
                                                             </div>
                                                         </div>
 
@@ -1570,35 +921,94 @@ function StudentTrackingView({ user, showToast }) {
                                                         )}
 
                                                         {/* Action Tasks Checklist */}
-                                                        {iv.actions && iv.actions.length > 0 && (
-                                                            <div>
-                                                                <div className="filter-section-title" style={{ marginTop: '4px', marginBottom: '8px' }}>
-                                                                    Action Items Checklist ({iv.actions.filter(a => a.completed).length}/{iv.actions.length} Completed):
+                                                        <div>
+                                                            <div className="filter-section-title" style={{ marginTop: '8px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                <span>Action Items Checklist ({((iv.actions || []).filter(a => a.completed)).length}/{(iv.actions || []).length} Completed):</span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setAddingActionForIv(addingActionForIv === iv.id ? null : iv.id)}
+                                                                    style={{
+                                                                        background: 'transparent',
+                                                                        color: '#60a5fa',
+                                                                        border: 'none',
+                                                                        cursor: 'pointer',
+                                                                        fontSize: '0.78rem',
+                                                                        fontWeight: '600'
+                                                                    }}
+                                                                >
+                                                                    {addingActionForIv === iv.id ? '✕ Cancel' : '+ Add Action Task'}
+                                                                </button>
+                                                            </div>
+
+                                                            {addingActionForIv === iv.id && (
+                                                                <div style={{
+                                                                    background: 'rgba(15, 23, 42, 0.9)',
+                                                                    padding: '12px',
+                                                                    borderRadius: '8px',
+                                                                    border: '1px solid #334155',
+                                                                    marginBottom: '10px',
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    gap: '8px'
+                                                                }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Action task title (e.g. Complete 20 LeetCode Mediums on Graphs)"
+                                                                        value={newActionTitle}
+                                                                        onChange={(e) => setNewActionTitle(e.target.value)}
+                                                                        style={{ padding: '6px 10px', borderRadius: '5px', background: '#1e293b', color: '#fff', border: '1px solid #475569', fontSize: '0.8rem' }}
+                                                                    />
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Weakness area (e.g. Graphs / DSA)"
+                                                                            value={newActionWeakness}
+                                                                            onChange={(e) => setNewActionWeakness(e.target.value)}
+                                                                            style={{ padding: '6px 10px', borderRadius: '5px', background: '#1e293b', color: '#fff', border: '1px solid #475569', fontSize: '0.8rem' }}
+                                                                        />
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Resource (e.g. NeetCode 150)"
+                                                                            value={newActionResource}
+                                                                            onChange={(e) => setNewActionResource(e.target.value)}
+                                                                            style={{ padding: '6px 10px', borderRadius: '5px', background: '#1e293b', color: '#fff', border: '1px solid #475569', fontSize: '0.8rem' }}
+                                                                        />
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleAppendAction(iv.id)}
+                                                                            style={{ padding: '6px 12px', borderRadius: '5px', background: '#2563eb', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }}
+                                                                        >
+                                                                            Save Action Task
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
-                                                                <div className="action-checklist">
-                                                                    {iv.actions.map((act, actIdx) => (
-                                                                        <div key={act.id || actIdx} className={`action-task-item ${act.completed ? 'completed' : ''}`}>
-                                                                            <input
-                                                                                type="checkbox"
-                                                                                className="action-checkbox"
-                                                                                checked={!!act.completed}
-                                                                                onChange={() => handleToggleTask(actIdx, ivIdx)}
-                                                                            />
-                                                                            <div className="action-task-content">
-                                                                                <div className="action-task-title" style={{ textDecoration: act.completed ? 'line-through' : 'none' }}>
-                                                                                    {act.title}
-                                                                                </div>
-                                                                                <div className="action-task-meta">
-                                                                                    {act.weakness_area && <span>Focus: {act.weakness_area}</span>}
-                                                                                    {act.resources && <span>Resource: {act.resources}</span>}
-                                                                                    {act.due_date && <span>Due: {act.due_date}</span>}
-                                                                                </div>
+                                                            )}
+
+                                                            <div className="action-checklist">
+                                                                {(iv.actions || []).map((act, actIdx) => (
+                                                                    <div key={act.id || actIdx} className={`action-task-item ${act.completed ? 'completed' : ''}`}>
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            className="action-checkbox"
+                                                                            checked={!!act.completed}
+                                                                            onChange={() => handleToggleTask(actIdx, ivIdx, act.id)}
+                                                                        />
+                                                                        <div className="action-task-content">
+                                                                            <div className="action-task-title" style={{ textDecoration: act.completed ? 'line-through' : 'none' }}>
+                                                                                {act.title}
+                                                                            </div>
+                                                                            <div className="action-task-meta">
+                                                                                {act.weakness_area && <span>Focus: {act.weakness_area}</span>}
+                                                                                {act.resources && <span>Resource: {act.resources}</span>}
+                                                                                {act.due_date && <span>Due: {act.due_date}</span>}
                                                                             </div>
                                                                         </div>
-                                                                    ))}
-                                                                </div>
+                                                                    </div>
+                                                                ))}
                                                             </div>
-                                                        )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })
@@ -1606,9 +1016,234 @@ function StudentTrackingView({ user, showToast }) {
                                     </div>
                                 )}
 
-                                {/* Tab 3: Profile & Technical Skills */}
+                                {/* Tab 3: Profile, Personal Dossier & Competitive Coding Tracker */}
                                 {inspectorTab === 'profile' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                        {/* Contact & Personal Dossier Card */}
+                                        <div style={{ background: 'rgba(15,23,42,0.7)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '18px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                                                <h4 style={{ fontSize: '0.95rem', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                                    <span>👤</span> Personal Details & Verification Dossier
+                                                </h4>
+                                                {selectedStudent.resume_url && (
+                                                    <a
+                                                        href={selectedStudent.resume_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            display: 'inline-flex',
+                                                            alignItems: 'center',
+                                                            gap: '6px',
+                                                            padding: '4px 12px',
+                                                            background: 'rgba(16, 185, 129, 0.15)',
+                                                            color: '#34d399',
+                                                            border: '1px solid rgba(16, 185, 129, 0.4)',
+                                                            borderRadius: '6px',
+                                                            fontSize: '0.78rem',
+                                                            fontWeight: '600',
+                                                            textDecoration: 'none'
+                                                        }}
+                                                    >
+                                                        📄 View Uploaded Resume
+                                                    </a>
+                                                )}
+                                            </div>
+
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '0.85rem' }}>
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>Phone Number</div>
+                                                    <div style={{ color: '#f8fafc', fontWeight: '600', marginTop: '2px' }}>{selectedStudent.phone || 'Not provided'}</div>
+                                                </div>
+
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>LinkedIn Profile</div>
+                                                    <div style={{ marginTop: '2px' }}>
+                                                        {selectedStudent.linkedin_url ? (
+                                                            <a href={selectedStudent.linkedin_url.startsWith('http') ? selectedStudent.linkedin_url : `https://${selectedStudent.linkedin_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: '600' }}>
+                                                                🔗 View LinkedIn &rarr;
+                                                            </a>
+                                                        ) : (
+                                                            <span style={{ color: 'var(--text-muted)' }}>Not linked</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>GitHub Profile</div>
+                                                    <div style={{ marginTop: '2px' }}>
+                                                        {selectedStudent.github_url ? (
+                                                            <a href={selectedStudent.github_url.startsWith('http') ? selectedStudent.github_url : `https://${selectedStudent.github_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#a78bfa', textDecoration: 'none', fontWeight: '600' }}>
+                                                                🐙 View GitHub &rarr;
+                                                            </a>
+                                                        ) : (
+                                                            <span style={{ color: 'var(--text-muted)' }}>Not linked</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>Portfolio / Website</div>
+                                                    <div style={{ marginTop: '2px' }}>
+                                                        {selectedStudent.portfolio_url ? (
+                                                            <a href={selectedStudent.portfolio_url.startsWith('http') ? selectedStudent.portfolio_url : `https://${selectedStudent.portfolio_url}`} target="_blank" rel="noopener noreferrer" style={{ color: '#34d399', textDecoration: 'none', fontWeight: '600' }}>
+                                                                🌐 View Portfolio &rarr;
+                                                            </a>
+                                                        ) : (
+                                                            <span style={{ color: 'var(--text-muted)' }}>Not linked</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Competitive Coding Platform Profiles & Monthly Solved Tracker */}
+                                        <div style={{ background: 'rgba(15,23,42,0.7)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '18px' }}>
+                                            <div style={{
+                                                background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.18), rgba(249, 115, 22, 0.08))',
+                                                border: '1px solid rgba(249, 115, 22, 0.4)',
+                                                borderRadius: '8px',
+                                                padding: '14px 18px',
+                                                marginBottom: '16px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                flexWrap: 'wrap',
+                                                gap: '10px'
+                                            }}>
+                                                <div>
+                                                    <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                        ⚡ Competitive Coding Activity Tracker
+                                                    </div>
+                                                    <div style={{ fontSize: '1.2rem', fontWeight: '800', color: '#ffffff', marginTop: '2px' }}>
+                                                        🔥 {selectedStudent.monthly_total_solved || 0} Problems Solved This Month
+                                                    </div>
+                                                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                                        Aggregated across LeetCode, Codeforces, CodeChef, HackerRank, and AtCoder
+                                                    </div>
+                                                </div>
+                                                <div style={{
+                                                    background: 'rgba(249, 115, 22, 0.2)',
+                                                    color: '#fdba74',
+                                                    padding: '6px 14px',
+                                                    borderRadius: '8px',
+                                                    fontWeight: '700',
+                                                    fontSize: '0.9rem',
+                                                    border: '1px solid rgba(249, 115, 22, 0.4)'
+                                                }}>
+                                                    Monthly Sum: {selectedStudent.monthly_total_solved || 0}
+                                                </div>
+                                            </div>
+
+                                            {/* 5 Platforms Cards */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                                                {/* LeetCode */}
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid #334155', borderRadius: '8px', padding: '12px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <strong style={{ color: '#fbbf24', fontSize: '0.85rem' }}>LeetCode</strong>
+                                                        {selectedStudent.leetcode_handle && (
+                                                            <a href={`https://leetcode.com/u/${selectedStudent.leetcode_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.7rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                        @{selectedStudent.leetcode_handle || 'Not connected'}
+                                                    </div>
+                                                    <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>This Month:</span>
+                                                        <strong style={{ color: '#34d399' }}>{selectedStudent.leetcode_solved_month || 0}</strong>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '2px' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>Total Solved:</span>
+                                                        <strong style={{ color: '#f8fafc' }}>{selectedStudent.leetcode_total_solved || 0}</strong>
+                                                    </div>
+                                                </div>
+
+                                                {/* Codeforces */}
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid #334155', borderRadius: '8px', padding: '12px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <strong style={{ color: '#60a5fa', fontSize: '0.85rem' }}>Codeforces</strong>
+                                                        {selectedStudent.codeforces_handle && (
+                                                            <a href={`https://codeforces.com/profile/${selectedStudent.codeforces_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.7rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                        @{selectedStudent.codeforces_handle || 'Not connected'}
+                                                    </div>
+                                                    <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>This Month:</span>
+                                                        <strong style={{ color: '#34d399' }}>{selectedStudent.codeforces_solved_month || 0}</strong>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '2px' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>Rating:</span>
+                                                        <strong style={{ color: '#60a5fa' }}>{selectedStudent.codeforces_rating || 'Unrated'}</strong>
+                                                    </div>
+                                                </div>
+
+                                                {/* CodeChef */}
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid #334155', borderRadius: '8px', padding: '12px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <strong style={{ color: '#d97706', fontSize: '0.85rem' }}>CodeChef</strong>
+                                                        {selectedStudent.codechef_handle && (
+                                                            <a href={`https://www.codechef.com/users/${selectedStudent.codechef_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.7rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                        @{selectedStudent.codechef_handle || 'Not connected'}
+                                                    </div>
+                                                    <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>This Month:</span>
+                                                        <strong style={{ color: '#34d399' }}>{selectedStudent.codechef_solved_month || 0}</strong>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '2px' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>Stars:</span>
+                                                        <strong style={{ color: '#f59e0b' }}>{selectedStudent.codechef_stars || '—'}</strong>
+                                                    </div>
+                                                </div>
+
+                                                {/* HackerRank */}
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid #334155', borderRadius: '8px', padding: '12px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <strong style={{ color: '#10b981', fontSize: '0.85rem' }}>HackerRank</strong>
+                                                        {selectedStudent.hackerrank_handle && (
+                                                            <a href={`https://www.hackerrank.com/profile/${selectedStudent.hackerrank_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.7rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                        @{selectedStudent.hackerrank_handle || 'Not connected'}
+                                                    </div>
+                                                    <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>This Month:</span>
+                                                        <strong style={{ color: '#34d399' }}>{selectedStudent.hackerrank_solved_month || 0}</strong>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '2px' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>Score:</span>
+                                                        <strong style={{ color: '#10b981' }}>{selectedStudent.hackerrank_score || 0}</strong>
+                                                    </div>
+                                                </div>
+
+                                                {/* AtCoder */}
+                                                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid #334155', borderRadius: '8px', padding: '12px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <strong style={{ color: '#a855f7', fontSize: '0.85rem' }}>AtCoder</strong>
+                                                        {selectedStudent.atcoder_handle && (
+                                                            <a href={`https://atcoder.jp/users/${selectedStudent.atcoder_handle}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.7rem', color: '#93c5fd', textDecoration: 'none' }}>↗</a>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                        @{selectedStudent.atcoder_handle || 'Not connected'}
+                                                    </div>
+                                                    <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>This Month:</span>
+                                                        <strong style={{ color: '#34d399' }}>{selectedStudent.atcoder_solved_month || 0}</strong>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '2px' }}>
+                                                        <span style={{ color: 'var(--text-muted)' }}>Rating:</span>
+                                                        <strong style={{ color: '#a855f7' }}>{selectedStudent.atcoder_rating || 'Unrated'}</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Technical Skillset */}
                                         <div style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '16px' }}>
                                             <h4 style={{ fontSize: '0.9rem', color: '#f8fafc', marginBottom: '10px' }}>Technical Skillset</h4>
                                             {selectedStudent.skills_list && selectedStudent.skills_list.length > 0 ? (
@@ -1635,6 +1270,7 @@ function StudentTrackingView({ user, showToast }) {
                                             )}
                                         </div>
 
+                                        {/* Assigned Mentors & Notes */}
                                         <div style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '16px' }}>
                                             <h4 style={{ fontSize: '0.9rem', color: '#f8fafc', marginBottom: '10px' }}>Assigned Mentors & Notes</h4>
                                             {selectedStudent.mentor_notes && selectedStudent.mentor_notes.length > 0 ? (
@@ -1669,8 +1305,10 @@ function StudentTrackingView({ user, showToast }) {
                                 <th>Department</th>
                                 <th>Year</th>
                                 <th>CGPA</th>
+                                <th>Monthly Solved</th>
                                 <th>Placement Status</th>
                                 <th>Offer / Current Stage</th>
+                                <th>Resume</th>
                                 <th>Interventions</th>
                                 <th>Action</th>
                             </tr>
@@ -1682,10 +1320,16 @@ function StudentTrackingView({ user, showToast }) {
                                     <td>
                                         <div style={{ fontWeight: '600', color: '#f8fafc' }}>{s.name}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.email}</div>
+                                        {s.phone && <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>📞 {s.phone}</div>}
                                     </td>
                                     <td><span className="dept-tag">{s.department}</span></td>
                                     <td><span className="year-tag">{s.year}</span></td>
                                     <td><strong>{s.cgpa}</strong></td>
+                                    <td>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', background: 'rgba(249, 115, 22, 0.15)', color: '#fdba74', fontWeight: '700', fontSize: '0.8rem', border: '1px solid rgba(249, 115, 22, 0.3)' }}>
+                                            🔥 {s.monthly_total_solved || 0}
+                                        </span>
+                                    </td>
                                     <td>
                                         {s.placement_status === 'Placed' ? (
                                             <span className="status-pill-placed">✓ Placed</span>
@@ -1708,6 +1352,15 @@ function StudentTrackingView({ user, showToast }) {
                                             </span>
                                         ) : (
                                             <span style={{ color: 'var(--text-muted)' }}>—</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        {s.resume_url ? (
+                                            <a href={s.resume_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#60a5fa', textDecoration: 'none', fontWeight: '600', fontSize: '0.78rem' }}>
+                                                📄 Resume
+                                            </a>
+                                        ) : (
+                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>—</span>
                                         )}
                                     </td>
                                     <td>

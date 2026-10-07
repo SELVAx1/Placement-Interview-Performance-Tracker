@@ -53,6 +53,47 @@ def find_column_index(header: List[str], aliases: List[str]) -> int:
     return -1
 
 
+def normalize_verdict(raw_verdict: str) -> str:
+    """
+    Normalizes human-entered verdict / status strings into standard system values:
+    'Selected', 'Rejected', 'Shortlisted', 'In Progress', etc.
+    Correctly recognizes typos like 'selecte', 'seleted', 'select', etc.
+    """
+    if not raw_verdict:
+        return "Selected"
+    v = str(raw_verdict).strip()
+    v_lower = v.lower()
+
+    # Rejection checks first to catch negative qualifiers:
+    # "not selected", "not select", "unselected", "rejected", "failed", "eliminated"
+    if any(k in v_lower for k in [
+        "not select", "not-select", "unselect", "reject", "fail", "eliminated", "disqualif", "dropped", "absent"
+    ]):
+        return "Rejected"
+
+    # Specific round shortlists: e.g. "Shortlisted for Round 2", "Selected for Round 3"
+    import re
+    m_r = re.search(r'round\s*(\d+)', v_lower)
+    if m_r and ("shortlist" in v_lower or "for round" in v_lower):
+        return f"Shortlisted for Round {m_r.group(1)}"
+
+    # Selection / cleared / placed keywords:
+    # "selecte", "select", "selected", "seleted", "selcted", "selecting", "selection",
+    # "placed", "hired", "offer", "offered", "passed", "pass", "cleared", "clear", "qualif"
+    if any(k in v_lower for k in [
+        "selecte", "select", "selet", "selct", "placed", "hired", "offer", "cleared", "passed", "pass", "clear", "qualif"
+    ]):
+        return "Selected"
+
+    if "shortlist" in v_lower:
+        return "Shortlisted"
+
+    if any(k in v_lower for k in ["hold", "waiting", "pending"]):
+        return "On Hold"
+
+    return v.capitalize()
+
+
 # ==============================================================
 # 1. PARSER FOR DRIVE SHORTLIST / RESULTS
 # ==============================================================
@@ -63,6 +104,7 @@ def parse_drive_records(content: bytes, filename: str) -> Tuple[List[Dict[str, A
     Detects whether this is Shortlist Mode (email only) or Verdict Mode (email + status/result).
     Returns (records, skipped_count, is_verdict_mode).
     """
+    import re
     rows = extract_rows_from_bytes(content, filename)
     header = rows[0]
 
@@ -70,13 +112,24 @@ def parse_drive_records(content: bytes, filename: str) -> Tuple[List[Dict[str, A
         "gmail", "email", "student email", "student gmail", "mail", "gmail id", "email id", "student email id"
     ])
     result_idx = find_column_index(header, [
-        "result", "status", "round result", "verdict", "drive status", "selection", "outcome", "shortlist status"
+        "result", "status", "round result", "verdict", "drive status", "selection", "outcome", "shortlist status",
+        "result status / verdict", "result / status", "selection verdict / status", "selection verdict",
+        "decision", "final verdict", "cleared", "selected", "placement status", "result status"
     ])
     round_idx = find_column_index(header, [
-        "round", "round number", "round no", "current round"
+        "round", "round number", "round no", "current round", "stage", "round cleared", "interview round"
     ])
     score_idx = find_column_index(header, [
         "score", "marks", "test score", "round score"
+    ])
+    feedback_idx = find_column_index(header, [
+        "feedback", "comments", "remarks", "interviewer feedback", "review"
+    ])
+    weakness_idx = find_column_index(header, [
+        "weakness area", "weakness", "weakness_area", "improvement area", "gap area", "gap", "areas of improvement"
+    ])
+    rejection_idx = find_column_index(header, [
+        "rejection reason", "reason", "rejection", "failure reason", "elimination reason"
     ])
 
     if email_idx == -1:
@@ -100,18 +153,32 @@ def parse_drive_records(content: bytes, filename: str) -> Tuple[List[Dict[str, A
         item = {"email": email}
 
         if is_verdict_mode and len(row) > result_idx and row[result_idx].strip():
-            item["verdict"] = row[result_idx].strip()
+            raw_v = row[result_idx].strip()
+            item["verdict"] = normalize_verdict(raw_v)
+            item["raw_verdict"] = raw_v
         else:
             item["verdict"] = None
+            item["raw_verdict"] = None
 
-        # Optional round
+        # Optional round - handles integers, floats, or strings like "Round 2", "R2", "2nd Round"
         if round_idx != -1 and len(row) > round_idx and row[round_idx].strip():
+            val = row[round_idx].strip()
             try:
-                item["round"] = int(float(row[round_idx].strip()))
+                item["round"] = int(float(val))
             except ValueError:
-                item["round"] = None
+                m = re.search(r'(\d+)', val)
+                if m:
+                    item["round"] = int(m.group(1))
+                else:
+                    item["round"] = None
         else:
             item["round"] = None
+
+        # If round wasn't in round column, check if verdict mentions round number (e.g. "Round 2")
+        if item["round"] is None and (item.get("raw_verdict") or item.get("verdict")):
+            m_v = re.search(r'round\s*(\d+)', item.get("raw_verdict") or item["verdict"], re.I)
+            if m_v:
+                item["round"] = int(m_v.group(1))
 
         # Optional score
         if score_idx != -1 and len(row) > score_idx and row[score_idx].strip():
@@ -122,9 +189,28 @@ def parse_drive_records(content: bytes, filename: str) -> Tuple[List[Dict[str, A
         else:
             item["score"] = None
 
+        # Optional feedback
+        if feedback_idx != -1 and len(row) > feedback_idx and row[feedback_idx].strip():
+            item["feedback"] = row[feedback_idx].strip()
+        else:
+            item["feedback"] = None
+
+        # Optional weakness area
+        if weakness_idx != -1 and len(row) > weakness_idx and row[weakness_idx].strip():
+            item["weakness_area"] = row[weakness_idx].strip()
+        else:
+            item["weakness_area"] = None
+
+        # Optional rejection reason
+        if rejection_idx != -1 and len(row) > rejection_idx and row[rejection_idx].strip():
+            item["rejection_reason"] = row[rejection_idx].strip()
+        else:
+            item["rejection_reason"] = None
+
         records.append(item)
 
     return records, skipped_count, is_verdict_mode
+
 
 
 # ==============================================================
@@ -200,6 +286,7 @@ def parse_student_roster_records(content: bytes, filename: str) -> Tuple[List[Di
     tenth_idx = find_column_index(header, ["tenth percentage", "10th", "10th percentage", "tenth", "10th %", "tenth %", "sslc"])
     twelfth_idx = find_column_index(header, ["twelfth percentage", "12th", "12th percentage", "twelfth", "12th %", "twelfth %", "hsc", "diploma"])
     skills_idx = find_column_index(header, ["skills", "technical skills", "skillset", "key skills"])
+    year_idx = find_column_index(header, ["academic year", "year", "current year", "batch", "batch year"])
 
     missing = []
     if reg_idx == -1: missing.append("Register Number")
@@ -248,6 +335,21 @@ def parse_student_roster_records(content: bytes, filename: str) -> Tuple[List[Di
 
         skills = row[skills_idx].strip() if (skills_idx != -1 and len(row) > skills_idx) else ""
 
+        year_val = ""
+        if year_idx != -1 and len(row) > year_idx and row[year_idx].strip():
+            year_val = row[year_idx].strip()
+        if not year_val:
+            if "2021" in reg or reg.startswith("21"):
+                year_val = "4th Year"
+            elif "2022" in reg or reg.startswith("22"):
+                year_val = "3rd Year"
+            elif "2023" in reg or reg.startswith("23"):
+                year_val = "2nd Year"
+            elif "2024" in reg or reg.startswith("24"):
+                year_val = "1st Year"
+            else:
+                year_val = "4th Year"
+
         records.append({
             "register_number": reg,
             "name": name,
@@ -256,7 +358,8 @@ def parse_student_roster_records(content: bytes, filename: str) -> Tuple[List[Di
             "cgpa": cgpa,
             "tenth_percentage": tenth,
             "twelfth_percentage": twelfth,
-            "skills": skills
+            "skills": skills,
+            "year": year_val
         })
 
     return records, skipped_count

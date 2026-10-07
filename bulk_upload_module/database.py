@@ -140,7 +140,7 @@ def upsert_user_account(email, role="Student", password=None):
         return {"uuid": user.uuid, "gmail": email, "role": role, "action": action}
 
 
-def upsert_student_roster_record(register_number, name, email, department, cgpa, tenth=None, twelfth=None, skills=""):
+def upsert_student_roster_record(register_number, name, email, department, cgpa, tenth=None, twelfth=None, skills="", year="4th Year"):
     register_number, email = register_number.strip().upper(), email.strip().lower()
     with session_scope() as session:
         student = session.scalar(select(StudentRoster).where(StudentRoster.register_number == register_number))
@@ -149,7 +149,8 @@ def upsert_student_roster_record(register_number, name, email, department, cgpa,
             session.add(student)
         student.name, student.email, student.department = name.strip(), email, department.strip().upper()
         student.cgpa, student.tenth_percentage, student.twelfth_percentage, student.skills = cgpa, tenth, twelfth, skills.strip()
-        return {"register_number": register_number, "name": student.name, "email": email, "department": student.department, "cgpa": cgpa}
+        student.year = year or "4th Year"
+        return {"register_number": register_number, "name": student.name, "email": email, "department": student.department, "cgpa": cgpa, "year": student.year}
 
 
 def get_all_student_roster():

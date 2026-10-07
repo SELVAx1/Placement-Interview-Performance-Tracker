@@ -23,6 +23,8 @@ def test_list_interventions_and_students():
     json_data = res.json()
     assert json_data["success"] is True
     assert "students" in json_data
+    # Coordinator has full visibility of multiple students across departments
+    assert len(json_data["students"]) >= 3
 
 def test_student_interventions_endpoint():
     coord = db.get_user_by_gmail("coordinator@gmail.com")
@@ -98,3 +100,108 @@ def test_derived_failure_analysis_is_non_deterministic(monkeypatch):
         for analysis in analyses
     }
     assert len(derived_results) > 1
+
+
+def test_coordinator_generate_ai_intervention_for_roster_student():
+    """Verify coordinator has full access to trigger AI plan for any student in roster."""
+    coord = db.get_user_by_gmail("coordinator@gmail.com")
+    assert coord is not None
+    coord_uuid = coord["uuid"]
+
+    res = client.post(
+        "/api/interventions/generate",
+        headers={
+            "x-user-id": coord_uuid,
+            "x-user-role": "Coordinator",
+            "x-department": "CSE"
+        },
+        json={
+            "gmail": "vikram.patel@college.edu"
+        }
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    assert "intervention" in data
+    assert data["intervention"]["student_gmail"] == "vikram.patel@college.edu"
+    assert len(data["intervention"]["actions"]) > 0
+
+def test_coordinator_custom_intervention_lifecycle():
+    """Verify coordinator can create custom intervention, append actions, update status, and complete tasks."""
+    coord = db.get_user_by_gmail("coordinator@gmail.com")
+    assert coord is not None
+    coord_uuid = coord["uuid"]
+
+    # 1. Create custom intervention
+    res = client.post(
+        "/api/interventions/custom",
+        headers={
+            "x-user-id": coord_uuid,
+            "x-user-role": "Coordinator",
+            "x-department": "CSE"
+        },
+        json={
+            "gmail": "deepa.krishnan@college.edu",
+            "title": "Specialized Hardware & Embedded Systems Practice",
+            "failure_summary": "Core embedded system questions difficulty.",
+            "ai_analysis": "Focus on microcontroller architecture and mock interview practice.",
+            "priority": "HIGH",
+            "actions": [
+                {
+                    "title": "Complete 8051 & ARM Architecture Revision",
+                    "weakness_area": "Embedded Systems",
+                    "resources": "Department Embedded Systems Lab Manual",
+                    "due_date": "2026-10-30"
+                }
+            ]
+        }
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    iv_id = data["intervention"]["id"]
+    action_id = data["intervention"]["actions"][0]["id"]
+
+    # 2. Add an action task
+    res_act = client.post(
+        f"/api/interventions/{iv_id}/actions",
+        headers={
+            "x-user-id": coord_uuid,
+            "x-user-role": "Coordinator",
+            "x-department": "CSE"
+        },
+        json={
+            "title": "Mock Technical Interview with Prof. Ramesh",
+            "weakness_area": "Microcontrollers",
+            "resources": "Interview Room 1",
+            "due_date": "2026-11-05"
+        }
+    )
+    assert res_act.status_code == 200
+    assert res_act.json()["success"] is True
+
+    # 3. Change status to IN_PROGRESS
+    res_status = client.patch(
+        f"/api/interventions/{iv_id}/status",
+        headers={
+            "x-user-id": coord_uuid,
+            "x-user-role": "Coordinator",
+            "x-department": "CSE"
+        },
+        json={"status": "IN_PROGRESS"}
+    )
+    assert res_status.status_code == 200
+    assert res_status.json()["status"] == "IN_PROGRESS"
+
+    # 4. Check off action task
+    res_check = client.patch(
+        f"/api/intervention/actions/{action_id}",
+        headers={
+            "x-user-id": coord_uuid,
+            "x-user-role": "Coordinator",
+            "x-department": "CSE"
+        },
+        json={"completed": True, "notes": "Completed and signed off by mentor."}
+    )
+    assert res_check.status_code == 200
+    assert res_check.json()["success"] is True
