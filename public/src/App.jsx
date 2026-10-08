@@ -35,6 +35,19 @@ function App() {
         }
     });
 
+    const [theme, setTheme] = React.useState(() => {
+        return localStorage.getItem('app_theme') || 'light';
+    });
+
+    React.useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('app_theme', theme);
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = theme === 'dark' ? '#161A19' : '#F5F5F2';
+    }, [theme]);
+
+    const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
+
     const handleLogout = () => {
         localStorage.removeItem('auth_user');
         localStorage.removeItem('auth_token');
@@ -54,10 +67,14 @@ function App() {
                     <Dashboard
                         user={currentUser}
                         onLogout={handleLogout}
+                        theme={theme}
+                        onToggleTheme={toggleTheme}
                     />
                 ) : (
                     <LoginForm
                         onLoginSuccess={handleLoginSuccess}
+                        theme={theme}
+                        onToggleTheme={toggleTheme}
                     />
                 )}
             </main>

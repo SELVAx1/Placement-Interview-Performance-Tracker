@@ -1,4 +1,4 @@
-function LoginForm({ onLoginSuccess }) {
+function LoginForm({ onLoginSuccess, theme, onToggleTheme }) {
     const [mode, setMode] = React.useState('signin');
     const [gmail, setGmail] = React.useState('');
     const [password, setPassword] = React.useState('');
@@ -122,20 +122,20 @@ function LoginForm({ onLoginSuccess }) {
     };
 
     const alertBg = alert.type === 'warning'
-        ? 'rgba(251, 191, 36, 0.15)'
+        ? 'var(--warning-bg)'
         : alert.type === 'success'
-            ? 'rgba(16, 185, 129, 0.15)'
-            : 'rgba(239, 68, 68, 0.15)';
+            ? 'var(--success-bg)'
+            : 'var(--error-bg)';
     const alertBorder = alert.type === 'warning'
-        ? 'rgba(251, 191, 36, 0.4)'
+        ? 'var(--warning-border)'
         : alert.type === 'success'
-            ? 'rgba(16, 185, 129, 0.4)'
-            : 'rgba(239, 68, 68, 0.4)';
+            ? 'var(--success-border)'
+            : 'var(--error-border)';
     const alertColor = alert.type === 'warning'
-        ? '#d97706'
+        ? 'var(--warning-text)'
         : alert.type === 'success'
-            ? '#059669'
-            : '#dc2626';
+            ? 'var(--success-text)'
+            : 'var(--error-text)';
 
     return (
         <div className="glass-card">
@@ -150,32 +150,45 @@ function LoginForm({ onLoginSuccess }) {
                 <p className="brand-desc">Enterprise Campus Recruitment Performance & AI Diagnostic Architecture</p>
             </div>
 
-            {/* Sign In / Sign Up Toggle */}
-            <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <button
-                    type="button"
-                    onClick={() => { setMode('signin'); resetForm(); }}
-                    style={{
-                        flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem',
-                        background: mode === 'signin' ? '#0f766e' : 'rgba(255,255,255,0.05)',
-                        color: mode === 'signin' ? '#fff' : '#94a3b8',
-                        transition: 'all 0.2s ease'
-                    }}
-                >
-                    Sign In
-                </button>
-                <button
-                    type="button"
-                    onClick={() => { setMode('signup'); resetForm(); }}
-                    style={{
-                        flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem',
-                        background: mode === 'signup' ? '#b45309' : 'rgba(255,255,255,0.05)',
-                        color: mode === 'signup' ? '#fff' : '#94a3b8',
-                        transition: 'all 0.2s ease'
-                    }}
-                >
-                    Sign Up
-                </button>
+            {/* Theme Toggle + Sign In / Sign Up Toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', flex: 1, border: '1px solid var(--border-color)' }}>
+                    <button
+                        type="button"
+                        onClick={() => { setMode('signin'); resetForm(); }}
+                        style={{
+                            flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem',
+                            background: mode === 'signin' ? 'var(--primary)' : 'var(--panel-hover)',
+                            color: mode === 'signin' ? '#fff' : 'var(--text-muted)',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        Sign In
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => { setMode('signup'); resetForm(); }}
+                        style={{
+                            flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem',
+                            background: mode === 'signup' ? 'var(--accent)' : 'var(--panel-hover)',
+                            color: mode === 'signup' ? '#fff' : 'var(--text-muted)',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        Sign Up
+                    </button>
+                </div>
+                {onToggleTheme && (
+                    <button type="button" className="theme-toggle" onClick={onToggleTheme} title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            {theme === 'dark' ? (
+                                <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>
+                            ) : (
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                            )}
+                        </svg>
+                    </button>
+                )}
             </div>
 
             {/* Alert Box */}
@@ -284,7 +297,7 @@ function LoginForm({ onLoginSuccess }) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                         <div className="input-group">
                             <label>Role</label>
-                            <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(255,255,255,0.12)', color: '#0f172a', fontSize: '0.9rem' }}>
+                            <select value={role} onChange={(e) => setRole(e.target.value)} className="form-select">
                                 <option value="Student">Student</option>
                                 <option value="Mentor">Mentor</option>
                                 <option value="Department">Department Head</option>
@@ -292,7 +305,7 @@ function LoginForm({ onLoginSuccess }) {
                         </div>
                         <div className="input-group">
                             <label>Department</label>
-                            <select value={department} onChange={(e) => setDepartment(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(255,255,255,0.12)', color: '#0f172a', fontSize: '0.9rem' }}>
+                            <select value={department} onChange={(e) => setDepartment(e.target.value)} className="form-select">
                                 <option value="CSE">CSE</option>
                                 <option value="IT">IT</option>
                                 <option value="ECE">ECE</option>
@@ -330,7 +343,7 @@ function LoginForm({ onLoginSuccess }) {
                         </div>
                     </div>
 
-                    <button type="submit" className="submit-btn" disabled={loading} style={{ background: loading ? '#334155' : 'linear-gradient(135deg, #b45309, #92400e)' }}>
+                    <button type="submit" className="submit-btn" disabled={loading} style={{ background: loading ? 'var(--text-muted)' : 'var(--accent)' }}>
                         {loading ? (
                             <span className="btn-loader"><svg className="spinner" viewBox="0 0 50 50"><circle className="path" cx="25" cy="25" r="20" fill="none" strokeWidth="5"></circle></svg></span>
                         ) : (
@@ -338,11 +351,29 @@ function LoginForm({ onLoginSuccess }) {
                         )}
                     </button>
 
-                    <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.82rem', marginTop: '12px' }}>
+                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '12px' }}>
                         After signup, a Coordinator must approve your account before you can sign in.
                     </p>
                 </form>
             )}
+
+            <div className="demo-section">
+                <span className="demo-title">Quick Test Accounts (Click to autofill):</span>
+                <div className="demo-chips">
+                    <button type="button" className="chip" onClick={() => handleQuickFill('coordinator@gmail.com', 'coord123')}>
+                        <span className="chip-badge coordinator">Coordinator</span> coordinator@gmail.com
+                    </button>
+                    <button type="button" className="chip" onClick={() => handleQuickFill('mentor@gmail.com', 'mentor123')}>
+                        <span className="chip-badge mentor" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>Mentor</span> mentor@gmail.com
+                    </button>
+                    <button type="button" className="chip" onClick={() => handleQuickFill('dept.cse@gmail.com', 'dept123')}>
+                        <span className="chip-badge department" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>Department</span> dept.cse@gmail.com
+                    </button>
+                    <button type="button" className="chip" onClick={() => handleQuickFill('student@gmail.com', 'student123')}>
+                        <span className="chip-badge student">Student</span> student@gmail.com
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

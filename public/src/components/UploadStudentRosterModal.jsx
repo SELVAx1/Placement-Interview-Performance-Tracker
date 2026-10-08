@@ -97,12 +97,12 @@ function UploadStudentRosterModal({ isOpen, onClose, onRosterUploaded }) {
                                 <span className="lbl">Total Processed</span>
                             </div>
                             <div className="sum-stat">
-                                <span className="val" style={{ color: '#0891b2' }}>{summaryReport.updated_count !== undefined ? summaryReport.updated_count : '-'}</span>
+                                <span className="val" style={{ color: 'var(--primary)' }}>{summaryReport.updated_count !== undefined ? summaryReport.updated_count : '-'}</span>
                                 <span className="lbl">Auto-Updated 🔄</span>
                             </div>
                             <div className="sum-stat">
-                                <span className="val" style={{ color: '#059669' }}>{summaryReport.created_count !== undefined ? summaryReport.created_count : '-'}</span>
-                                <span className="lbl">New Profiles ✨</span>
+                                <span className="val" style={{ color: 'var(--success-text)' }}>{summaryReport.created_count !== undefined ? summaryReport.created_count : '-'}</span>
+                                <span className="lbl">New Profiles </span>
                             </div>
                             <div className="sum-stat">
                                 <span className="val">{summaryReport.skipped_count}</span>
@@ -126,14 +126,14 @@ function UploadStudentRosterModal({ isOpen, onClose, onRosterUploaded }) {
                                                             borderRadius: '10px',
                                                             fontWeight: 'bold',
                                                             background: st.action === 'Updated' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(52, 211, 153, 0.15)',
-                                                            color: st.action === 'Updated' ? '#0891b2' : '#059669',
+                                                            color: st.action === 'Updated' ? 'var(--primary)' : 'var(--success-text)',
                                                             border: `1px solid ${st.action === 'Updated' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(52, 211, 153, 0.3)'}`
                                                         }}>
                                                             {st.action === 'Updated' ? 'Auto-Updated' : 'New'}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <span style={{ fontSize: '0.74rem', color: '#94a3b8' }}>{st.email} &bull; {st.department}</span>
+                                                <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>{st.email} &bull; {st.department}</span>
                                             </div>
                                             <span className="p-res">CGPA {st.cgpa}</span>
                                         </div>

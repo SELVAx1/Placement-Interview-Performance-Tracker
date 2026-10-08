@@ -61,12 +61,12 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
 
     const availableBranches = ['CSE', 'IT', 'ECE', 'EEE', 'MECH', 'CIVIL', 'AIDS'];
     const roundTypes = [
-        { value: 'CODING', label: '💻 Coding / DSA Assessment' },
-        { value: 'TECHNICAL', label: '⚙️ Technical Interview' },
-        { value: 'MANAGERIAL', label: '👔 Managerial & System Design' },
-        { value: 'HR', label: '🤝 HR & Behavioral' },
-        { value: 'APTITUDE', label: '📝 Aptitude & Core MCQs' },
-        { value: 'GROUP_DISCUSSION', label: '🗣️ Group Discussion / Case Study' }
+        { value: 'CODING', label: 'Coding / DSA Assessment' },
+        { value: 'TECHNICAL', label: 'Technical Interview' },
+        { value: 'MANAGERIAL', label: 'Managerial & System Design' },
+        { value: 'HR', label: 'HR & Behavioral' },
+        { value: 'APTITUDE', label: 'Aptitude & Core MCQs' },
+        { value: 'GROUP_DISCUSSION', label: 'Group Discussion / Case Study' }
     ];
 
     // Initialize or populate form on open or when driveToEdit changes
@@ -310,7 +310,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
                             <h3 style={{ fontSize: '1.18rem', margin: 0, fontWeight: 700 }}>
                                 {isEditMode ? `Alter Drive: ${companyName || 'Company'}` : 'Initialize Placement Drive'}
                             </h3>
-                            <p className="modal-sub" style={{ margin: '3px 0 0', color: '#94a3b8' }}>
+                            <p className="modal-sub" style={{ margin: '3px 0 0', color: 'var(--text-muted)' }}>
                                 {isEditMode
                                     ? 'Modify hiring criteria, adjust total rounds, and customize round descriptions'
                                     : 'Configure recruitment specifications and setup dynamic multi-round evaluation pipeline'}
@@ -457,7 +457,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
                             {/* Toolbar to select quick round counts */}
                             <div className="round-count-toolbar">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ fontSize: '0.8rem', color: '#334155', fontWeight: 600 }}>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                                         Total Rounds for this Company:
                                     </span>
                                     <span className="round-count-badge">
@@ -466,7 +466,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
                                 </div>
 
                                 <div className="round-count-pills">
-                                    <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Quick Set:</span>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Quick Set:</span>
                                     {[1, 2, 3, 4, 5, 6].map(cnt => (
                                         <button
                                             type="button"
@@ -482,7 +482,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
 
                             {/* Round Cards */}
                             {loadingRounds ? (
-                                <div style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '0.84rem' }}>
+                                <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.84rem' }}>
                                     Loading existing round pipeline...
                                 </div>
                             ) : (
@@ -514,7 +514,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
 
                                             <div className="round-card-grid">
                                                 <div>
-                                                    <label style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
+                                                    <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
                                                         Round Name / Title *
                                                     </label>
                                                     <input
@@ -528,7 +528,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
                                                 </div>
 
                                                 <div>
-                                                    <label style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
+                                                    <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
                                                         Round Type
                                                     </label>
                                                     <select
@@ -544,7 +544,7 @@ function CreateDriveModal({ isOpen, onClose, onDriveCreated, driveToEdit = null 
                                             </div>
 
                                             <div>
-                                                <label style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
+                                                <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '3px' }}>
                                                     Round Assessment Description & Criteria
                                                 </label>
                                                 <textarea

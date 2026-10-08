@@ -153,7 +153,7 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                     {drive.job_role} • Min CGPA: {drive.min_cgpa ? `${drive.min_cgpa}/10` : 'None'} • {drive.location || 'On Campus'}
                                 </p>
                                 {(drive.description || processData?.drive?.description) && (
-                                    <p style={{ margin: '5px 0 0', fontSize: '0.82rem', color: '#94a3b8', lineHeight: '1.4' }}>
+                                    <p style={{ margin: '5px 0 0', fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
                                         {drive.description || processData?.drive?.description}
                                     </p>
                                 )}
@@ -213,9 +213,9 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '6px',
-                                background: 'rgba(20, 184, 166, 0.15)',
-                                color: '#5eead4',
-                                border: '1px solid rgba(20, 184, 166, 0.35)',
+                                background: 'var(--primary-light)',
+                                color: 'var(--primary)',
+                                border: '1px solid var(--primary-subtle)',
                                 padding: '8px 14px',
                                 borderRadius: '8px',
                                 fontSize: '0.85rem',
@@ -352,14 +352,14 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                         display: 'inline-flex',
                                                                         alignItems: 'center',
                                                                         gap: '6px',
-                                                                        background: 'linear-gradient(135deg, #059669, #10b981)',
-                                                                        color: '#ffffff',
+                                                                        background: 'var(--success-text)',
+                                                                        color: '#fff',
                                                                         fontWeight: '600',
                                                                         fontSize: '0.8rem',
                                                                         padding: '8px 14px',
                                                                         borderRadius: '8px',
-                                                                        border: '1px solid rgba(16, 185, 129, 0.4)',
-                                                                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)',
+                                                                        border: '1px solid var(--success-border)',
+                                                                        boxShadow: '0 2px 8px var(--success-border)',
                                                                         cursor: 'pointer',
                                                                         transition: 'all 0.2s ease'
                                                                     }}
@@ -380,7 +380,7 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                             <span className="stat-label">Appeared in Round</span>
                                                             <span className="stat-val">{r.appeared_count}</span>
                                                         </div>
-                                                        <div className="funnel-stat-arrow">→</div>
+                                                        <div className="funnel-stat-arrow">&rarr;</div>
                                                         <div className="funnel-stat-item stat-cleared">
                                                             <span className="stat-label">Cleared / Selected</span>
                                                             <span className="stat-val">{r.cleared_count}</span>
@@ -399,7 +399,7 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                             className="btn-toggle-roster"
                                                             onClick={() => setExpandedRound(isExpanded ? null : r.round_number)}
                                                         >
-                                                            {isExpanded ? 'Hide Candidate List ▲' : `View Candidates (${r.appeared_count}) ▼`}
+                                                            {isExpanded ? 'Hide Candidate List ' : `View Candidates (${r.appeared_count}) `}
                                                         </button>
                                                     </div>
 
@@ -439,15 +439,15 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                                     <td>{s.score !== null && s.score !== undefined ? s.score : '—'}</td>
                                                                                     <td>
                                                                                         {isRejected ? (
-                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(239,68,68,0.18)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.3)' }}>
+                                                                                            <span className="res-badge-pill" style={{ background: 'var(--error-bg)', color: 'var(--error-text)', border: '1px solid var(--error-border)' }}>
                                                                                                 Rejected in Round {r.round_number}
                                                                                             </span>
                                                                                         ) : isCleared ? (
-                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(16,185,129,0.18)', color: '#059669', border: '1px solid rgba(16,185,129,0.3)' }}>
-                                                                                                {isFinalStage ? 'Selected / Hired 🏆' : `Cleared Stage • In Round ${r.round_number + 1}`}
+                                                                                            <span className="res-badge-pill" style={{ background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid var(--success-border)' }}>
+                                                                                                {isFinalStage ? 'Selected / Hired ' : `Cleared Stage • In Round ${r.round_number + 1}`}
                                                                                             </span>
                                                                                         ) : (
-                                                                                            <span className="res-badge-pill" style={{ background: 'rgba(56,189,248,0.15)', color: '#0891b2', border: '1px solid rgba(56,189,248,0.3)' }}>
+                                                                                            <span className="res-badge-pill" style={{ background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary-subtle)' }}>
                                                                                                 Appearing in Round {r.round_number} (Evaluating)
                                                                                             </span>
                                                                                         )}
@@ -465,9 +465,9 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                                                     }}
                                                                                                     title="Select status for candidate: Selected (Green) or Rejected (Red)"
                                                                                                     style={{
-                                                                                                        background: '#ffffff',
-                                                                                                        color: '#5eead4',
-                                                                                                        border: '1px solid rgba(147, 197, 253, 0.4)',
+                                                                                                        background: 'var(--panel-bg)',
+                                                                                                        color: 'var(--primary)',
+                                                                                                        border: '1px solid var(--primary-subtle)',
                                                                                                         fontSize: '0.74rem',
                                                                                                         fontWeight: 600,
                                                                                                         padding: '5px 8px',
@@ -476,11 +476,11 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                                                     }}
                                                                                                 >
                                                                                                     <option value="" disabled>Status Dropdown ▾</option>
-                                                                                                    <option value="select" style={{ color: '#10b981', fontWeight: 600 }}>
-                                                                                                        {isFinalStage ? '✓ Selected (Offer Job 🏆)' : `✓ Selected (Move to Round ${r.round_number + 1})`}
+                                                                                                    <option value="select" style={{ color: 'var(--success-text)', fontWeight: 600 }}>
+                                                                                                        {isFinalStage ? 'Selected (Offer Job )' : `Selected (Move to Round ${r.round_number + 1})`}
                                                                                                     </option>
-                                                                                                    <option value="reject" style={{ color: '#ef4444', fontWeight: 600 }}>
-                                                                                                        ✕ Rejected
+                                                                                                    <option value="reject" style={{ color: 'var(--error-text)', fontWeight: 600 }}>
+                                                                                                        Rejected
                                                                                                     </option>
                                                                                                 </select>
 
@@ -488,24 +488,24 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                                                 <button
                                                                                                     type="button"
                                                                                                     onClick={() => handleCandidateAction(s.gmail, 'select', r.round_number)}
-                                                                                                    title={isFinalStage ? "Mark candidate as final Selected (Offered Job 🏆)" : `Select candidate: moves them to appear in Round ${r.round_number + 1}`}
+                                                                                                    title={isFinalStage ? "Mark candidate as final Selected (Offered Job )" : `Select candidate: moves them to appear in Round ${r.round_number + 1}`}
                                                                                                     style={{
                                                                                                         display: 'inline-flex',
                                                                                                         alignItems: 'center',
                                                                                                         gap: '4px',
-                                                                                                        background: 'linear-gradient(135deg, #059669, #10b981)',
-                                                                                                        border: '1px solid rgba(16, 185, 129, 0.5)',
-                                                                                                        color: '#ffffff',
+                                                                                                        background: 'var(--success-text)',
+                                                                                                        border: '1px solid var(--success-border)',
+                                                                                                        color: '#fff',
                                                                                                         fontSize: '0.74rem',
                                                                                                         fontWeight: 700,
                                                                                                         padding: '5px 11px',
                                                                                                         borderRadius: '6px',
                                                                                                         cursor: 'pointer',
-                                                                                                        boxShadow: '0 2px 6px rgba(16, 185, 129, 0.3)',
+                                                                                                        boxShadow: '0 2px 6px var(--success-border)',
                                                                                                         transition: 'all 0.15s ease'
                                                                                                     }}
                                                                                                 >
-                                                                                                    {isFinalStage ? '✓ Selected (Offer 🏆)' : `✓ Selected (Move to R${r.round_number + 1})`}
+                                                                                                    {isFinalStage ? 'Selected (Offer )' : `Selected (Move to R${r.round_number + 1})`}
                                                                                                 </button>
 
                                                                                                 {/* Red Rejected Button */}
@@ -517,19 +517,19 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                                                         display: 'inline-flex',
                                                                                                         alignItems: 'center',
                                                                                                         gap: '4px',
-                                                                                                        background: 'linear-gradient(135deg, #dc2626, #ef4444)',
-                                                                                                        border: '1px solid rgba(239, 68, 68, 0.5)',
-                                                                                                        color: '#ffffff',
+                                                                                                        background: 'var(--error-text)',
+                                                                                                        border: '1px solid var(--error-border)',
+                                                                                                        color: '#fff',
                                                                                                         fontSize: '0.74rem',
                                                                                                         fontWeight: 700,
                                                                                                         padding: '5px 10px',
                                                                                                         borderRadius: '6px',
                                                                                                         cursor: 'pointer',
-                                                                                                        boxShadow: '0 2px 6px rgba(239, 68, 68, 0.3)',
+                                                                                                        boxShadow: '0 2px 6px var(--error-border)',
                                                                                                         transition: 'all 0.15s ease'
                                                                                                     }}
                                                                                                 >
-                                                                                                    ✕ Rejected
+                                                                                                    Rejected
                                                                                                 </button>
                                                                                             </div>
                                                                                         )}
@@ -554,7 +554,7 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                 <div className="selected-tab-content">
                                     <div className="selected-celebration-banner">
                                         <div className="celebration-left">
-                                            <div className="trophy-icon">🏆</div>
+                                            <div className="trophy-icon"></div>
                                             <div>
                                                 <h3>
                                                     {selectedStudents.length} Students Selected by {drive.company_name}
@@ -631,9 +631,9 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                     borderRadius: '6px',
                                                                     fontSize: '0.78rem',
                                                                     fontWeight: '600',
-                                                                    background: 'rgba(180, 83, 9, 0.15)',
-                                                                    color: '#d97706',
-                                                                    border: '1px solid rgba(180, 83, 9, 0.3)'
+                                                                    background: 'var(--accent-subtle)',
+                                                                    color: 'var(--warning-text)',
+                                                                    border: '1px solid var(--accent-subtle)'
                                                                 }}>
                                                                     Round {s.round || 1}
                                                                 </span>
@@ -723,9 +723,9 @@ function ViewResultsModal({ isOpen, onClose, drive, onOpenUpload }) {
                                                                     borderRadius: '6px',
                                                                     fontSize: '0.78rem',
                                                                     fontWeight: '600',
-                                                                    background: 'rgba(180, 83, 9, 0.15)',
-                                                                    color: '#d97706',
-                                                                    border: '1px solid rgba(180, 83, 9, 0.3)'
+                                                                    background: 'var(--accent-subtle)',
+                                                                    color: 'var(--warning-text)',
+                                                                    border: '1px solid var(--accent-subtle)'
                                                                 }}>
                                                                     Round {r.round || 1}
                                                                 </span>
