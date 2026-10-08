@@ -7,17 +7,9 @@ from sqlalchemy import create_engine, func, select, text
 from sqlalchemy.orm import sessionmaker
 
 from orm_models import Base, Drive, StudentDriveResult, StudentRoster, UploadLog, User
-from .config import DB_PATH
 
-DATABASE_URL = (
-    os.environ.get("BULK_DATABASE_URL")
-    or os.environ.get("DATABASE_URL")
-    or f"sqlite:///{DB_PATH.replace(os.sep, '/')}"
-)
-engine_options = {"pool_pre_ping": True}
-if DATABASE_URL.startswith("sqlite"):
-    engine_options["connect_args"] = {"check_same_thread": False}
-engine = create_engine(DATABASE_URL, **engine_options)
+DATABASE_URL = (os.environ.get("BULK_DATABASE_URL") or os.environ["DATABASE_URL"]).replace("postgresql://", "postgresql+psycopg2://", 1)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 
