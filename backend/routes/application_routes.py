@@ -33,9 +33,12 @@ router.add_api_route("/api/interventions/generate-all", controller.generate_all_
 router.add_api_route("/api/interventions/custom", controller.create_custom_intervention, methods=["POST"])
 router.add_api_route("/api/interventions/{intervention_id}/actions", controller.add_intervention_action, methods=["POST"])
 router.add_api_route("/api/interventions/{intervention_id}", controller.delete_intervention, methods=["DELETE"])
-router.add_api_route("/api/interventions/{intervention_id}/status", controller.change_intervention_status, methods=["PATCH"])
+router.add_api_route("/api/interventions/{intervention_id}/status", controller.change_intervention_status, methods=["PATCH", "PUT"])
+router.add_api_route("/api/intervention/{intervention_id}/status", controller.change_intervention_status, methods=["PATCH", "PUT"])
 router.add_api_route("/api/interventions/{student_id}", controller.get_student_interventions, methods=["GET"])
-router.add_api_route("/api/intervention/actions/{action_id}", controller.change_intervention_action, methods=["PATCH"])
+router.add_api_route("/api/intervention/actions/{action_id}", controller.change_intervention_action, methods=["PATCH", "PUT"])
+router.add_api_route("/api/interventions/actions/{action_id}", controller.change_intervention_action, methods=["PATCH", "PUT"])
+
 
 # Coordinator tracking
 router.add_api_route("/api/coordinator/students-tracking", controller.get_coordinator_tracking, methods=["GET"])

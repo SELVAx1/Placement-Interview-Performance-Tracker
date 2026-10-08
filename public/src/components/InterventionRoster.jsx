@@ -144,19 +144,33 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
     };
 
     const updateAction = async (action) => {
+        const nextCompleted = !action.completed;
+        // Optimistic UI state update
+        setStudents(prev => prev.map(s => ({
+            ...s,
+            interventions: (s.interventions || []).map(iv => ({
+                ...iv,
+                actions: (iv.actions || []).map(act => act.id === action.id ? { ...act, completed: nextCompleted } : act)
+            }))
+        })));
+
         try {
             const res = await fetch(`/api/interventions/actions/${action.id}`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', ...window.interventionHeaders(user) },
                 body: JSON.stringify({
-                    completed: !action.completed,
+                    completed: nextCompleted,
                     notes: action.notes || ''
                 })
             });
             if (res.ok) {
                 await loadStudents(false);
+            } else {
+                await loadStudents(false);
+                setError('Failed to update action task.');
             }
         } catch (err) {
+            await loadStudents(false);
             setError('Failed to update action.');
         }
     };
