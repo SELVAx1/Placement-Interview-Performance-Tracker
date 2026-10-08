@@ -365,8 +365,6 @@ def change_intervention_status(intervention_id: str, request: InterventionStatus
 
 def change_intervention_action(action_id: str, request: InterventionActionRequest, x_user_id: str = Header(None), x_user_role: str = Header(None), x_department: str = Header(None)):
     user = _requester(x_user_id, x_user_role, x_department)
-    if user["role"].strip().lower() == "student":
-        raise HTTPException(status_code=403, detail="Students cannot update intervention actions")
     visible_action_ids = {action["id"] for item in _visible_interventions(user) for action in item.get("actions", [])}
     if action_id not in visible_action_ids:
         raise HTTPException(status_code=403, detail="You are not allowed to update this action")

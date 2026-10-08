@@ -8,5 +8,3 @@ services:
     environment:
       - ENV=development
       - PORT=8080
-    volumes:
-      - ./database.db:/app/database.db

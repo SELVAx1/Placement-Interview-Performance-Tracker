@@ -1,5 +1,4 @@
 import os
-import sqlite3
 import uuid
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -8,13 +7,9 @@ from sqlalchemy import create_engine, func, select, text
 from sqlalchemy.orm import sessionmaker
 
 from orm_models import Base, Drive, StudentDriveResult, StudentRoster, UploadLog, User
-from .config import DB_PATH
 
-DATABASE_URL = os.environ.get("BULK_DATABASE_URL", f"sqlite:///{DB_PATH.replace(os.sep, '/')}")
-engine_options = {"pool_pre_ping": True}
-if DATABASE_URL.startswith("sqlite"):
-    engine_options["connect_args"] = {"check_same_thread": False}
-engine = create_engine(DATABASE_URL, **engine_options)
+DATABASE_URL = (os.environ.get("BULK_DATABASE_URL") or os.environ["DATABASE_URL"]).replace("postgresql://", "postgresql+psycopg2://", 1)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 
@@ -41,10 +36,7 @@ def session_scope():
 
 def get_connection():
     """Legacy raw connection retained only for the standalone test reset fixture."""
-    conn = engine.raw_connection()
-    if DATABASE_URL.startswith("sqlite"):
-        conn.driver_connection.row_factory = sqlite3.Row
-    return conn
+    return engine.raw_connection()
 
 
 def init_db():

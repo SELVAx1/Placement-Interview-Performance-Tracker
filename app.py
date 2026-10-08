@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 
 import uvicorn
 from dotenv import load_dotenv
@@ -16,11 +17,16 @@ from backend.routes.drive_routes import router as drive_router
 from backend.routes.upload_routes import router as upload_router
 
 
-db.init_db()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db.init_db()
+    yield
+
 
 app = FastAPI(
     title="Placement Portal & Dedicated Bulk Upload Engine",
     description="Integrated API for Authentication, Placement Drives, Student Profiles, and Bulk Ingestion/Export.",
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
