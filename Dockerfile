@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["gunicorn", "app:app", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8080", "--preload"]
+CMD exec gunicorn app:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8080} --preload
