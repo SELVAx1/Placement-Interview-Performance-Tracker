@@ -34,8 +34,8 @@ function MentorDashboard({ user, onLogout, theme, onToggleTheme }) {
     const loadDashboardData = React.useCallback(async () => {
         setLoading(true);
         try {
-            // Fetch sample or demo mentees
-            const menteesRes = await fetch(`/api/mentor/demo/mentees`);
+            const mentorEmail = user?.gmail || 'mentor@gmail.com';
+            const menteesRes = await fetch(`/api/mentor/demo/mentees?gmail=${encodeURIComponent(mentorEmail)}`);
             if (menteesRes.ok) {
                 const data = await menteesRes.json();
                 setMentees(data.mentees || []);

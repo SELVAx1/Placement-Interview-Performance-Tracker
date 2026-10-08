@@ -58,8 +58,18 @@ def test_nonexistent_gmail():
     assert data["message"] == "Invalid Gmail or password", f"Unexpected message: {data['message']}"
     print("[OK] Test 3 PASSED: Non-existent Gmail returned 401 Unauthorized and 'Invalid Gmail or password'")
 
+def test_get_departments():
+    response = client.get("/api/departments")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "departments" in data
+    assert isinstance(data["departments"], list)
+    assert len(data["departments"]) > 0
+
 if __name__ == "__main__":
     test_successful_login()
     test_invalid_password()
     test_nonexistent_gmail()
+    test_get_departments()
     print("\nALL AUTOMATED TESTS PASSED SUCCESSFULLY!")

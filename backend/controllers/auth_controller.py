@@ -90,3 +90,9 @@ def grant_single_access(request: GrantSingleAccessRequest):
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"success": False, "message": "Please enter a valid Gmail address."})
     result = auth_service.grant_access(gmail, request.role, request.password)
     return {"success": True, "message": f"Successfully granted {result['role']} access to {gmail}.", "user": result}
+
+
+def get_departments():
+    departments = auth_service.get_departments()
+    return {"success": True, "departments": departments}
+

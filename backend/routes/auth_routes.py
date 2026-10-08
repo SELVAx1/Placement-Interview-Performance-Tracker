@@ -11,3 +11,5 @@ router.add_api_route("/api/users/grant-single-access", auth_controller.grant_sin
 router.add_api_route("/api/signups/pending", auth_controller.get_pending_signups, methods=["GET"])
 router.add_api_route("/api/signups/{user_uuid}/approve", auth_controller.approve_signup_request, methods=["POST"])
 router.add_api_route("/api/signups/{user_uuid}/reject", auth_controller.reject_signup_request, methods=["POST"])
+router.add_api_route("/api/departments", auth_controller.get_departments, methods=["GET"])
+

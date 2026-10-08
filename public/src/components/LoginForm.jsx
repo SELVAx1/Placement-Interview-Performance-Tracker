@@ -7,8 +7,22 @@ function LoginForm({ onLoginSuccess, theme, onToggleTheme }) {
     const [role, setRole] = React.useState('Student');
     const [name, setName] = React.useState('');
     const [department, setDepartment] = React.useState('CSE');
+    const [availableDepartments, setAvailableDepartments] = React.useState(['CSE', 'IT', 'ECE', 'EEE', 'MECH', 'AI & DS', 'CIVIL']);
     const [loading, setLoading] = React.useState(false);
     const [alert, setAlert] = React.useState({ show: false, type: '', message: '' });
+
+    React.useEffect(() => {
+        fetch('/api/departments')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && Array.isArray(data.departments) && data.departments.length > 0) {
+                    setAvailableDepartments(data.departments);
+                    setDepartment(prev => data.departments.includes(prev) ? prev : data.departments[0]);
+                }
+            })
+            .catch(err => console.error('Failed to fetch departments from database:', err));
+    }, []);
+
 
     const resetForm = () => {
         setGmail('');
@@ -306,13 +320,9 @@ function LoginForm({ onLoginSuccess, theme, onToggleTheme }) {
                         <div className="input-group">
                             <label>Department</label>
                             <select value={department} onChange={(e) => setDepartment(e.target.value)} className="form-select">
-                                <option value="CSE">CSE</option>
-                                <option value="IT">IT</option>
-                                <option value="ECE">ECE</option>
-                                <option value="EEE">EEE</option>
-                                <option value="MECH">MECH</option>
-                                <option value="AI & DS">AI & DS</option>
-                                <option value="CIVIL">CIVIL</option>
+                                {availableDepartments.map(dept => (
+                                    <option key={dept} value={dept}>{dept}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -356,24 +366,6 @@ function LoginForm({ onLoginSuccess, theme, onToggleTheme }) {
                     </p>
                 </form>
             )}
-
-            <div className="demo-section">
-                <span className="demo-title">Quick Test Accounts (Click to autofill):</span>
-                <div className="demo-chips">
-                    <button type="button" className="chip" onClick={() => handleQuickFill('coordinator@gmail.com', 'coord123')}>
-                        <span className="chip-badge coordinator">Coordinator</span> coordinator@gmail.com
-                    </button>
-                    <button type="button" className="chip" onClick={() => handleQuickFill('mentor@gmail.com', 'mentor123')}>
-                        <span className="chip-badge mentor" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>Mentor</span> mentor@gmail.com
-                    </button>
-                    <button type="button" className="chip" onClick={() => handleQuickFill('dept.cse@gmail.com', 'dept123')}>
-                        <span className="chip-badge department" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>Department</span> dept.cse@gmail.com
-                    </button>
-                    <button type="button" className="chip" onClick={() => handleQuickFill('student@gmail.com', 'student123')}>
-                        <span className="chip-badge student">Student</span> student@gmail.com
-                    </button>
-                </div>
-            </div>
         </div>
     );
 }

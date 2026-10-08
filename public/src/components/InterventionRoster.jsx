@@ -503,11 +503,12 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                                         title="Delete intervention"
                                                                         style={{ background: 'transparent', border: 'none', color: 'var(--error-text)', cursor: 'pointer', fontSize: '0.9rem', padding: '4px' }}
                                                                     >
-                                                                        
+                                                                        ✕
                                                                     </button>
                                                                 </>
                                                             )}
                                                         </div>
+                                                    </div>
 
                                                     {intervention.ai_analysis && (
                                                         <p style={{ color: 'var(--primary)', fontSize: '0.84rem', margin: '8px 0', background: 'var(--primary-light)', padding: '6px 10px', borderRadius: '4px' }}>
@@ -563,20 +564,20 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                                         onClick={() => handleAppendAction(intervention.id)}
                                                                         style={{ padding: '5px 12px', borderRadius: '4px', background: 'var(--primary)', color: 'var(--text-primary)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '0.78rem' }}
                                                                     >
-                                                                        {addingActionForIv === intervention.id ? '✕ Cancel' : '+ Add Task'}
+                                                                        Save Task
                                                                     </button>
-                                                                )}
+                                                                </div>
                                                             </div>
+                                                        )}
 
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                                             {(intervention.actions || []).map(action => (
                                                                 <label key={action.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: action.completed ? 'var(--text-muted)' : 'var(--text-primary)', fontSize: '0.85rem', background: 'var(--panel-bg)', padding: '6px 10px', borderRadius: '5px' }}>
                                                                     <input
-                                                                        type="text"
-                                                                        placeholder="Task title (e.g. Solve 20 Dynamic Programming questions)"
-                                                                        value={newActionTitle}
-                                                                        onChange={(e) => setNewActionTitle(e.target.value)}
-                                                                        style={{ padding: '8px 12px', borderRadius: '6px', background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                                                                        type="checkbox"
+                                                                        checked={Boolean(action.completed)}
+                                                                        onChange={() => updateAction(action)}
+                                                                        style={{ cursor: 'pointer' }}
                                                                     />
                                                                     <span style={{ textDecoration: action.completed ? 'line-through' : 'none', flex: 1 }}>{action.title}</span>
                                                                     {action.weakness_area && (
@@ -586,8 +587,8 @@ function InterventionRoster({ user, canGenerate = true, title = 'All Student Int
                                                             ))}
                                                         </div>
                                                     </div>
-                                                );
-                                            })
+                                                </div>
+                                            ))
                                         )}
                                     </div>
                                 )}
