@@ -51,4 +51,4 @@ jobs:
             --cpu 1 \
             --min-instances 0 \
             --max-instances 3 \
-            --set-env-vars "SECURE_COOKIES=true,ENV=production,JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}"
+            --set-env-vars "SECURE_COOKIES=true,ENV=production,JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }},DATABASE_URL=${{ secrets.DATABASE_URL }},GROQ_API_KEY=${{ secrets.GROQ_API_KEY }},GROQ_API_URL=${{ secrets.GROQ_API_URL }},GROQ_MODEL=${{ secrets.GROQ_MODEL }}"
