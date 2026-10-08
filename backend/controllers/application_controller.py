@@ -408,8 +408,10 @@ def export_coordinator_student_dossier(identifier: str, format: str = "xlsx"):
 # Mentor
 # ---------------------------------------------------------------------------
 
-def get_mentor_demo_data():
-    return {"success": True, **db.get_mentor_dashboard_data("mentor@gmail.com")}
+def get_mentor_demo_data(gmail: str = None):
+    target_email = (gmail or "mentor@gmail.com").strip().lower()
+    return {"success": True, **db.get_mentor_dashboard_data(target_email)}
+
 
 
 def get_notes(student_id: str):

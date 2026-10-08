@@ -26,7 +26,8 @@ function DepartmentDashboard({ user, onLogout, theme, onToggleTheme }) {
     const fetchDepartmentData = React.useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/department/dashboard?dept=CSE');
+            const deptName = user?.department || 'CSE';
+            const res = await fetch(`/api/department/dashboard?dept=${encodeURIComponent(deptName)}`);
             if (res.ok) {
                 const data = await res.json();
                 setDeptData(data);

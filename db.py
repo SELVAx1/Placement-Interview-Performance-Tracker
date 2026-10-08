@@ -2354,6 +2354,19 @@ def get_all_student_roster():
         return students
 
 
+def get_departments():
+    with session_scope() as session:
+        roster_depts = session.scalars(select(StudentRoster.department).distinct()).all()
+        user_depts = session.scalars(select(User.department).distinct()).all()
+        all_depts = set()
+        for d in list(roster_depts) + list(user_depts):
+            if d and d.strip():
+                all_depts.add(d.strip().upper())
+        if not all_depts:
+            all_depts = {"CSE", "IT", "ECE", "EEE", "MECH", "AI & DS", "CIVIL"}
+        return sorted(list(all_depts))
+
+
 def record_upload_log(upload_type: str, filename: str, total_rows: int, processed_count: int, skipped_count: int, status: str = "SUCCESS"):
     log_id = str(uuid.uuid4())
     with session_scope() as session:

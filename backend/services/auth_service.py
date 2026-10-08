@@ -151,3 +151,8 @@ def grant_access(gmail: str, role: str, password: str = None):
 
 def bulk_grant_access(records):
     return db.bulk_grant_user_access(records)
+
+
+def get_departments():
+    return db.get_departments()
+
