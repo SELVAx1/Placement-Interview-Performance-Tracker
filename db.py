@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 
 import bcrypt
 from sqlalchemy import create_engine, delete, func, select, text, update
-from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import sessionmaker
 
 from orm_models import (
@@ -47,12 +46,8 @@ def session_scope():
 
 
 def get_db_connection():
-    """Legacy raw connection kept for tests that inspect the database directly."""
-    import sqlite3
-    db_path = DATABASE_URL.replace("sqlite:///", "")
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    return conn
+    """Raw connection for tests that inspect the database directly."""
+    return engine.raw_connection()
 
 
 _STANDARD_ROUND_TEMPLATES = [
@@ -147,8 +142,8 @@ def _migrate_columns(conn):
         ("drives", "description TEXT"),
         ("authenticate", "department TEXT DEFAULT 'CSE'"),
         ("authenticate", "year TEXT DEFAULT '4th Year'"),
-        ("authenticate", "is_active BOOLEAN DEFAULT 1"),
-        ("authenticate", "is_approved BOOLEAN DEFAULT 1"),
+        ("authenticate", "is_active BOOLEAN DEFAULT TRUE"),
+        ("authenticate", "is_approved BOOLEAN DEFAULT TRUE"),
     ]
     sr_extra_cols = [
         "phone TEXT", "linkedin_url TEXT", "github_url TEXT", "portfolio_url TEXT",
@@ -168,10 +163,7 @@ def _migrate_columns(conn):
         migrations.append(("students_roster", col_def))
 
     for table, col_def in migrations:
-        try:
-            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col_def}"))
-        except Exception:
-            pass
+        conn.execute(text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col_def}"))
 
 
 def _hash_pw(plain: str) -> str:
@@ -435,7 +427,11 @@ def get_all_drives():
 
 
 def _upsert_round(session, r_id, drive_id, r_num, r_name, r_type, r_desc):
-    stmt = sqlite_insert(Round).values(
+    if DATABASE_URL.startswith("postgresql"):
+        from sqlalchemy.dialects.postgresql import insert as _insert
+    else:
+        from sqlalchemy.dialects.sqlite import insert as _insert
+    stmt = _insert(Round).values(
         round_id=r_id, drive_id=drive_id, round_number=r_num,
         round_name=r_name, round_type=r_type, description=r_desc,
     ).on_conflict_do_update(
@@ -1172,7 +1168,7 @@ def save_intervention(intervention: dict, actions: list):
             SELECT id FROM interventions
             WHERE LOWER(student_gmail) = LOWER(:gmail)
             ORDER BY updated_at DESC, created_at DESC
-            LIMIT -1 OFFSET 3
+            OFFSET 3
         """), {"gmail": intervention["student_gmail"]}).mappings().all()
         for row in old_ids_rows:
             session.execute(delete(InterventionAction).where(InterventionAction.intervention_id == row["id"]))
